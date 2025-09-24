@@ -1,0 +1,26 @@
+{
+  "name": "Ebo'o Gest - Gestion Multi-Activités PME",
+  "short_name": "Ebo'o Gest",
+  "description": "Solution de gestion complète pour restaurants, snacks, bars, cafés et commerces",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#0d9488",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/favicon-ebo-gest.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/apple-touch-icon-ebo-gest.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    }
+  ],
+  "categories": ["business", "productivity", "finance"],
+  "lang": "fr",
+  "dir": "ltr"
+}

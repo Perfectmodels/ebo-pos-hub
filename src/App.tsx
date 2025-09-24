@@ -6,15 +6,20 @@ import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "./contexts/AuthContext";
+import { ActivityProvider } from "./contexts/ActivityContext";
 import { ProtectedRoute } from "./components/ProtectedRoute";
-import { AppSidebar } from "./components/AppSidebar";
+import AdaptiveSidebar from "./components/AdaptiveSidebar";
+import AdaptiveDashboard from "./components/AdaptiveDashboard";
 import Home from "./pages/Home";
 import Auth from "./pages/Auth";
+import InscriptionPME from "./pages/InscriptionPME";
 import Dashboard from "./pages/Dashboard";
 import Ventes from "./pages/Ventes";
 import Stock from "./pages/Stock";
 import Personnel from "./pages/Personnel";
 import Rapports from "./pages/Rapports";
+import Parametres from "./pages/Parametres";
+import AdminPanel from "./pages/AdminPanel";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -22,20 +27,22 @@ const queryClient = new QueryClient();
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <AuthProvider>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
+      <ActivityProvider>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
           <Routes>
             {/* Public Routes */}
             <Route path="/" element={<Home />} />
             <Route path="/auth" element={<Auth />} />
+            <Route path="/inscription-pme" element={<InscriptionPME />} />
             
             {/* Protected Routes */}
             <Route path="/dashboard" element={
               <ProtectedRoute>
                 <AppLayout>
-                  <Dashboard />
+                  <AdaptiveDashboard />
                 </AppLayout>
               </ProtectedRoute>
             } />
@@ -81,19 +88,27 @@ const App = () => (
                 </AppLayout>
               </ProtectedRoute>
             } />
-            <Route path="/parametres" element={
-              <ProtectedRoute>
-                <AppLayout>
-                  <div className="p-6"><h1 className="text-3xl font-bold">Paramètres - En développement</h1></div>
-                </AppLayout>
-              </ProtectedRoute>
-            } />
+                  <Route path="/parametres" element={
+                    <ProtectedRoute>
+                      <AppLayout>
+                        <Parametres />
+                      </AppLayout>
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/admin" element={
+                    <ProtectedRoute>
+                      <AppLayout>
+                        <AdminPanel />
+                      </AppLayout>
+                    </ProtectedRoute>
+                  } />
             
             {/* Catch all */}
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
-      </TooltipProvider>
+        </TooltipProvider>
+      </ActivityProvider>
     </AuthProvider>
   </QueryClientProvider>
 );
@@ -102,7 +117,7 @@ const App = () => (
 const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => (
   <SidebarProvider>
     <div className="min-h-screen flex w-full bg-gradient-bg">
-      <AppSidebar />
+      <AdaptiveSidebar />
       <div className="flex-1 flex flex-col">
         {/* Header with Trigger */}
         <header className="h-14 flex items-center border-b border-border bg-card px-4">

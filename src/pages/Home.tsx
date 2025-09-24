@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import EboLogo from "@/components/EboLogo";
 import { 
   ShoppingCart,
   Package,
@@ -64,7 +65,7 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
-              <h1 className="text-2xl font-bold text-primary">Ebo'o Gest</h1>
+              <EboLogo size="md" variant="minimal" />
               <Badge variant="secondary" className="ml-2">Pro</Badge>
             </div>
             <div className="flex items-center space-x-4">
@@ -96,15 +97,17 @@ export default function Home() {
               Restaurants, bars, cafés, snacks - centralisez tout en un seul endroit.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link to="/auth">
+              <Link to="/inscription-pme">
                 <Button size="lg" className="btn-gradient">
-                  Démarrer Gratuitement
+                  Inscription PME
                   <ArrowRight className="w-5 h-5 ml-2" />
                 </Button>
               </Link>
-              <Button size="lg" variant="outline">
-                Voir la Démo
-              </Button>
+              <Link to="/auth">
+                <Button size="lg" variant="outline">
+                  Se connecter
+                </Button>
+              </Link>
             </div>
           </div>
         </div>

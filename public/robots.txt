@@ -1,14 +1,19 @@
-User-agent: Googlebot
-Allow: /
-
-User-agent: Bingbot
-Allow: /
-
-User-agent: Twitterbot
-Allow: /
-
-User-agent: facebookexternalhit
-Allow: /
-
 User-agent: *
 Allow: /
+
+# Sitemap
+Sitemap: https://eboo-gest.vercel.app/sitemap.xml
+
+# Disallow admin panel for non-authenticated users
+Disallow: /admin
+Disallow: /dashboard
+Disallow: /ventes
+Disallow: /stock
+Disallow: /personnel
+Disallow: /rapports
+Disallow: /parametres
+
+# Allow public pages
+Allow: /
+Allow: /auth
+Allow: /inscription-pme
