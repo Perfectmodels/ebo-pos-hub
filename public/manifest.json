@@ -7,6 +7,8 @@
   "background_color": "#ffffff",
   "theme_color": "#0d9488",
   "orientation": "portrait-primary",
+  "scope": "/",
+  "id": "eboo-gest-pwa",
   "icons": [
     {
       "src": "/logo-ebo-gest.png",
@@ -16,11 +18,86 @@
     },
     {
       "src": "/logo-ebo-gest.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/logo-ebo-gest.png",
       "sizes": "180x180",
+      "type": "image/png"
+    },
+    {
+      "src": "/logo-ebo-gest.png",
+      "sizes": "144x144",
+      "type": "image/png"
+    },
+    {
+      "src": "/logo-ebo-gest.png",
+      "sizes": "96x96",
+      "type": "image/png"
+    },
+    {
+      "src": "/logo-ebo-gest.png",
+      "sizes": "72x72",
+      "type": "image/png"
+    },
+    {
+      "src": "/logo-ebo-gest.png",
+      "sizes": "48x48",
       "type": "image/png"
     }
   ],
   "categories": ["business", "productivity", "finance"],
   "lang": "fr",
-  "dir": "ltr"
+  "dir": "ltr",
+  "prefer_related_applications": false,
+  "related_applications": [],
+  "screenshots": [
+    {
+      "src": "/logo-ebo-gest.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "Ebo'o Gest Dashboard"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Tableau de bord",
+      "short_name": "Dashboard",
+      "description": "Accéder au tableau de bord",
+      "url": "/dashboard",
+      "icons": [
+        {
+          "src": "/logo-ebo-gest.png",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "Ventes",
+      "short_name": "Ventes",
+      "description": "Gérer les ventes",
+      "url": "/ventes",
+      "icons": [
+        {
+          "src": "/logo-ebo-gest.png",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "Stock",
+      "short_name": "Stock",
+      "description": "Gérer le stock",
+      "url": "/stock",
+      "icons": [
+        {
+          "src": "/logo-ebo-gest.png",
+          "sizes": "96x96"
+        }
+      ]
+    }
+  ]
 }

@@ -5,13 +5,15 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import PWAInstaller from "@/components/PWAInstaller";
+import PWANotifications from "@/components/PWANotifications";
 import "@/config/console"; // Configuration console
 import { AuthProvider } from "./contexts/AuthContext";
 import { ActivityProvider } from "./contexts/ActivityContext";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import AdaptiveSidebar from "./components/AdaptiveSidebar";
 import AdaptiveDashboard from "./components/AdaptiveDashboard";
-import Home from "./pages/Home";
+import Home from "./pages/HomeNew";
 import Auth from "./pages/Auth";
 import InscriptionPME from "./pages/InscriptionPME";
 import Dashboard from "./pages/Dashboard";
@@ -20,12 +22,13 @@ import Stock from "./pages/Stock";
 import Personnel from "./pages/Personnel";
 import Rapports from "./pages/Rapports";
 import Parametres from "./pages/Parametres";
-import AdminPanel from "./pages/AdminPanelSecure";
+import AdminPanel from "./pages/AdminPanelCMS";
 import AdminLogin from "./pages/AdminLogin";
 import AuthErrorHandler from "./components/AuthErrorHandler";
 import AuthCallbackHandler from "./components/AuthCallbackHandler";
 import ConfirmSignup from "./pages/ConfirmSignup";
 import Contact from "./pages/Contact";
+import Guide from "./pages/Guide";
 import NotFound from "./pages/NotFound";
 import ErrorBoundary from "./components/ErrorBoundary";
 
@@ -39,6 +42,8 @@ const App = () => (
           <TooltipProvider>
             <Toaster />
             <Sonner />
+            <PWAInstaller />
+            <PWANotifications />
                 <BrowserRouter
                   future={{
                     v7_startTransition: true,
@@ -57,6 +62,7 @@ const App = () => (
                   <Route path="/register" element={<InscriptionPME />} /> {/* Redirect register to PME */}
                   <Route path="/signup" element={<InscriptionPME />} /> {/* Redirect signup to PME */}
                   <Route path="/contact" element={<Contact />} />
+                  <Route path="/guide" element={<Guide />} />
                   <Route path="/admin-login" element={<AdminLogin />} />
             
             {/* Protected Routes */}
