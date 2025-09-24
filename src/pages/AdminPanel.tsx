@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import AdminAuth from "@/components/AdminAuth";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -76,10 +77,42 @@ interface PME {
 }
 
 export default function AdminPanel() {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [activeTab, setActiveTab] = useState('overview');
   const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
+
+  // Vérifier l'authentification au chargement
+  useEffect(() => {
+    const checkAuth = () => {
+      const isAuth = localStorage.getItem('admin_authenticated') === 'true';
+      const loginTime = localStorage.getItem('admin_login_time');
+      
+      if (isAuth && loginTime) {
+        // Vérifier si la session n'a pas expiré (24h)
+        const loginDate = new Date(loginTime);
+        const now = new Date();
+        const hoursDiff = (now.getTime() - loginDate.getTime()) / (1000 * 60 * 60);
+        
+        if (hoursDiff < 24) {
+          setIsAuthenticated(true);
+        } else {
+          // Session expirée
+          localStorage.removeItem('admin_authenticated');
+          localStorage.removeItem('admin_login_time');
+        }
+      }
+    };
+    
+    checkAuth();
+  }, []);
+
+  const handleLogout = () => {
+    localStorage.removeItem('admin_authenticated');
+    localStorage.removeItem('admin_login_time');
+    setIsAuthenticated(false);
+  };
   
   // Données simulées pour la démo
   const [stats, setStats] = useState<AdminStats>({
@@ -722,6 +755,35 @@ export default function AdminPanel() {
           </Card>
         </TabsContent>
       </Tabs>
+    </div>
+  );
+
+  // Afficher l'authentification si pas connecté
+  if (!isAuthenticated) {
+    return <AdminAuth onSuccess={() => setIsAuthenticated(true)} />;
+  }
+
+  return (
+    <div className="p-6 space-y-6">
+      {/* Header avec bouton de déconnexion */}
+      <div className="flex justify-between items-center">
+        <div>
+          <h1 className="text-3xl font-bold text-foreground flex items-center gap-2">
+            <Shield className="w-8 h-8 text-primary" />
+            Panel Administrateur
+          </h1>
+          <p className="text-muted-foreground">
+            Gestion centralisée de la plateforme Ebo'o Gest
+          </p>
+        </div>
+        <Button onClick={handleLogout} variant="outline">
+          <Shield className="w-4 h-4 mr-2" />
+          Déconnexion
+        </Button>
+      </div>
+
+      {/* Contenu du panel */}
+      {renderAdminContent()}
     </div>
   );
 }

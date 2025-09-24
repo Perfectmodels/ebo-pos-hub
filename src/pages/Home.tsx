@@ -69,11 +69,19 @@ export default function Home() {
               <Badge variant="secondary" className="ml-2">Pro</Badge>
             </div>
             <div className="flex items-center space-x-4">
+              <Link to="/contact">
+                <Button variant="ghost">Support</Button>
+              </Link>
+              <Link to="/admin-login">
+                <Button variant="ghost" className="text-muted-foreground hover:text-primary">
+                  Admin
+                </Button>
+              </Link>
               <Link to="/auth">
                 <Button variant="outline">Connexion</Button>
               </Link>
-              <Link to="/auth">
-                <Button className="btn-gradient">Commencer</Button>
+              <Link to="/inscription">
+                <Button className="btn-gradient">Inscription PME</Button>
               </Link>
             </div>
           </div>
@@ -97,7 +105,7 @@ export default function Home() {
               Restaurants, bars, cafés, snacks - centralisez tout en un seul endroit.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link to="/inscription-pme">
+              <Link to="/inscription">
                 <Button size="lg" className="btn-gradient">
                   Inscription PME
                   <ArrowRight className="w-5 h-5 ml-2" />
@@ -229,7 +237,7 @@ export default function Home() {
           <p className="text-xl text-muted-foreground mb-8">
             Rejoignez les centaines d'établissements qui font déjà confiance à Ebo'o Gest
           </p>
-          <Link to="/auth">
+          <Link to="/inscription">
             <Button size="lg" className="btn-gradient">
               Commencer Maintenant
               <ArrowRight className="w-5 h-5 ml-2" />

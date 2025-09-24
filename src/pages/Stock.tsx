@@ -7,7 +7,7 @@ import { useProducts } from "@/hooks/useProducts";
 import { useStockMovements } from "@/hooks/useStockMovements";
 import { useToast } from "@/hooks/use-toast";
 import QRScanner from "@/components/QRScanner";
-import RealQRScanner from "@/components/RealQRScanner";
+import SimpleQRScanner from "@/components/SimpleQRScanner";
 import QuickAddProduct from "@/components/QuickAddProduct";
 import QRGenerator from "@/components/QRGenerator";
 import SobragaBrands from "@/components/SobragaBrands";
@@ -116,7 +116,7 @@ export default function Stock() {
           </p>
         </div>
         <div className="flex gap-2">
-      <RealQRScanner
+      <SimpleQRScanner
         onProductFound={(productData) => {
           // Pré-remplir le formulaire d'ajout avec les données scannées
           setShowAddProduct(true);

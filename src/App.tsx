@@ -4,7 +4,8 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import "@/config/console"; // Configuration console
 import { AuthProvider } from "./contexts/AuthContext";
 import { ActivityProvider } from "./contexts/ActivityContext";
 import { ProtectedRoute } from "./components/ProtectedRoute";
@@ -19,22 +20,31 @@ import Stock from "./pages/Stock";
 import Personnel from "./pages/Personnel";
 import Rapports from "./pages/Rapports";
 import Parametres from "./pages/Parametres";
-import AdminPanel from "./pages/AdminPanel";
+import AdminPanel from "./pages/AdminPanelSecure";
+import AdminLogin from "./pages/AdminLogin";
 import AuthErrorHandler from "./components/AuthErrorHandler";
 import AuthCallbackHandler from "./components/AuthCallbackHandler";
 import ConfirmSignup from "./pages/ConfirmSignup";
+import Contact from "./pages/Contact";
 import NotFound from "./pages/NotFound";
+import ErrorBoundary from "./components/ErrorBoundary";
 
 const queryClient = new QueryClient();
 
 const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <AuthProvider>
-      <ActivityProvider>
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          <BrowserRouter>
+  <ErrorBoundary>
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider>
+        <ActivityProvider>
+          <TooltipProvider>
+            <Toaster />
+            <Sonner />
+                <BrowserRouter
+                  future={{
+                    v7_startTransition: true,
+                    v7_relativeSplatPath: true
+                  }}
+                >
           <Routes>
                   {/* Public Routes */}
                   <Route path="/" element={<Home />} />
@@ -43,6 +53,11 @@ const App = () => (
                   <Route path="/auth/callback" element={<AuthCallbackHandler />} />
                   <Route path="/confirm-signup" element={<ConfirmSignup />} />
                   <Route path="/inscription-pme" element={<InscriptionPME />} />
+                  <Route path="/inscription" element={<InscriptionPME />} /> {/* Redirect inscription to PME */}
+                  <Route path="/register" element={<InscriptionPME />} /> {/* Redirect register to PME */}
+                  <Route path="/signup" element={<InscriptionPME />} /> {/* Redirect signup to PME */}
+                  <Route path="/contact" element={<Contact />} />
+                  <Route path="/admin-login" element={<AdminLogin />} />
             
             {/* Protected Routes */}
             <Route path="/dashboard" element={
@@ -101,22 +116,19 @@ const App = () => (
                       </AppLayout>
                     </ProtectedRoute>
                   } />
-                  <Route path="/admin" element={
-                    <ProtectedRoute>
-                      <AppLayout>
-                        <AdminPanel />
-                      </AppLayout>
-                    </ProtectedRoute>
-                  } />
+                  <Route path="/admin" element={<AdminPanel />} />
             
-            {/* Catch all */}
-            <Route path="*" element={<NotFound />} />
+                  {/* No redirect needed - root already handled above */}
+                  
+                  {/* Catch all - 404 */}
+                  <Route path="*" element={<NotFound />} />
           </Routes>
-        </BrowserRouter>
-        </TooltipProvider>
-      </ActivityProvider>
-    </AuthProvider>
-  </QueryClientProvider>
+            </BrowserRouter>
+          </TooltipProvider>
+        </ActivityProvider>
+      </AuthProvider>
+    </QueryClientProvider>
+  </ErrorBoundary>
 );
 
 // App Layout for authenticated pages

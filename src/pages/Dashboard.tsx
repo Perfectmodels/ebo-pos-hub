@@ -195,10 +195,10 @@ export default function Dashboard() {
             )}
             Actualiser
           </Button>
-          <Button className="btn-gradient">
-            <ShoppingCart className="w-4 h-4 mr-2" />
-            Nouvelle Vente
-          </Button>
+        <Button className="btn-gradient">
+          <ShoppingCart className="w-4 h-4 mr-2" />
+          Nouvelle Vente
+        </Button>
         </div>
       </div>
 
@@ -261,26 +261,26 @@ export default function Dashboard() {
                 <p>Aucune commande récente</p>
               </div>
             ) : (
-              <div className="space-y-3">
-                {recentOrders.map((order) => (
-                  <div key={order.id} className="flex items-center justify-between p-3 rounded-lg border border-border">
-                    <div>
-                      <p className="font-medium text-foreground">{order.customer}</p>
-                      <p className="text-sm text-muted-foreground">{order.time}</p>
-                    </div>
-                    <div className="text-right">
-                      <p className="font-semibold text-foreground">{order.amount}</p>
-                      <span className={`text-xs px-2 py-1 rounded-full ${
-                        order.status === 'Payé' 
-                          ? 'bg-accent/10 text-accent' 
-                          : 'bg-orange-500/10 text-orange-500'
-                      }`}>
-                        {order.status}
-                      </span>
-                    </div>
+            <div className="space-y-3">
+              {recentOrders.map((order) => (
+                <div key={order.id} className="flex items-center justify-between p-3 rounded-lg border border-border">
+                  <div>
+                    <p className="font-medium text-foreground">{order.customer}</p>
+                    <p className="text-sm text-muted-foreground">{order.time}</p>
                   </div>
-                ))}
-              </div>
+                  <div className="text-right">
+                    <p className="font-semibold text-foreground">{order.amount}</p>
+                    <span className={`text-xs px-2 py-1 rounded-full ${
+                      order.status === 'Payé' 
+                        ? 'bg-accent/10 text-accent' 
+                        : 'bg-orange-500/10 text-orange-500'
+                    }`}>
+                      {order.status}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
             )}
           </CardContent>
         </Card>
@@ -307,20 +307,20 @@ export default function Dashboard() {
                 <p className="text-sm">Aucun produit en rupture</p>
               </div>
             ) : (
-              <div className="space-y-3">
-                {lowStockProducts.map((product, index) => (
-                  <div key={index} className="flex items-center justify-between p-3 rounded-lg bg-destructive/5 border border-destructive/20">
-                    <div>
-                      <p className="font-medium text-foreground">{product.name}</p>
+            <div className="space-y-3">
+              {lowStockProducts.map((product, index) => (
+                <div key={index} className="flex items-center justify-between p-3 rounded-lg bg-destructive/5 border border-destructive/20">
+                  <div>
+                    <p className="font-medium text-foreground">{product.name}</p>
                       <p className="text-sm text-muted-foreground">Min: {product.min_stock} unités</p>
-                    </div>
-                    <div className="text-right">
-                      <span className="text-lg font-bold text-destructive">{product.current_stock}</span>
-                      <p className="text-xs text-muted-foreground">en stock</p>
-                    </div>
                   </div>
-                ))}
-              </div>
+                  <div className="text-right">
+                      <span className="text-lg font-bold text-destructive">{product.current_stock}</span>
+                    <p className="text-xs text-muted-foreground">en stock</p>
+                  </div>
+                </div>
+              ))}
+            </div>
             )}
           </CardContent>
         </Card>
@@ -347,19 +347,19 @@ export default function Dashboard() {
                 <p className="text-sm">Les meilleures ventes apparaîtront ici</p>
               </div>
             ) : (
-              <div className="space-y-3">
-                {topProducts.map((product, index) => (
-                  <div key={index} className="flex items-center justify-between p-3 rounded-lg border border-border">
-                    <div>
-                      <p className="font-medium text-foreground">{product.name}</p>
-                      <p className="text-sm text-muted-foreground">{product.sales} vendus</p>
-                    </div>
-                    <div className="text-right">
-                      <p className="font-semibold text-primary">{product.revenue.toLocaleString()} FCFA</p>
-                    </div>
+            <div className="space-y-3">
+              {topProducts.map((product, index) => (
+                <div key={index} className="flex items-center justify-between p-3 rounded-lg border border-border">
+                  <div>
+                    <p className="font-medium text-foreground">{product.name}</p>
+                    <p className="text-sm text-muted-foreground">{product.sales} vendus</p>
                   </div>
-                ))}
-              </div>
+                  <div className="text-right">
+                      <p className="font-semibold text-primary">{product.revenue.toLocaleString()} FCFA</p>
+                  </div>
+                </div>
+              ))}
+            </div>
             )}
           </CardContent>
         </Card>

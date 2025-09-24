@@ -8,7 +8,7 @@ import { useSales } from "@/hooks/useSales";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import QRScanner from "@/components/QRScanner";
-import RealQRScanner from "@/components/RealQRScanner";
+import SimpleQRScanner from "@/components/SimpleQRScanner";
 import { 
   ShoppingCart, 
   Plus, 
@@ -174,7 +174,7 @@ export default function Ventes() {
                 className="pl-10"
               />
             </div>
-      <RealQRScanner
+      <SimpleQRScanner
         onProductFound={handleQRScanned}
         onProductNotFound={(code) => {
           toast({

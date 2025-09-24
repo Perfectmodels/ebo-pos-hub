@@ -1,16 +1,15 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { QrCode, Camera, Search, X, Loader2, Package, Plus, CheckCircle, AlertTriangle } from 'lucide-react';
+import { QrCode, Camera, Search, X, Package, Plus, CheckCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useProducts } from '@/hooks/useProducts';
-import { useAuditTrail } from '@/hooks/useAuditTrail';
 import { useAuth } from '@/contexts/AuthContext';
 
-interface RealQRScannerProps {
+interface SimpleQRScannerProps {
   onProductFound: (productData: any) => void;
   onProductNotFound?: (code: string) => void;
   mode: 'add' | 'sell' | 'search';
@@ -18,7 +17,7 @@ interface RealQRScannerProps {
   description?: string;
 }
 
-const RealQRScanner: React.FC<RealQRScannerProps> = ({
+const SimpleQRScanner: React.FC<SimpleQRScannerProps> = ({
   onProductFound,
   onProductNotFound,
   mode,
@@ -26,86 +25,100 @@ const RealQRScanner: React.FC<RealQRScannerProps> = ({
   description = "Scannez un code QR pour interagir avec un produit."
 }) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [scanResult, setScanResult] = useState<string | null>(null);
   const [manualCode, setManualCode] = useState('');
   const [isScanning, setIsScanning] = useState(false);
-  const [cameraError, setCameraError] = useState<string | null>(null);
   const [scannedProducts, setScannedProducts] = useState<any[]>([]);
   const scannerRef = useRef<any>(null);
-  const videoRef = useRef<HTMLVideoElement>(null);
   const { toast } = useToast();
   const { addProduct, products } = useProducts();
-  const { logProductAction } = useAuditTrail();
   const { user } = useAuth();
 
-  const qrCodeRegionId = "qr-code-full-region";
+  const qrCodeRegionId = "simple-qr-scanner";
 
   // Initialiser le scanner QR
   useEffect(() => {
     if (isOpen && isScanning) {
-      try {
-        scannerRef.current = new (window as any).Html5QrcodeScanner(
-          qrCodeRegionId,
-          {
-            fps: 10,
-            qrbox: { width: 250, height: 250 },
-            formatsToSupport: [
-              (window as any).Html5QrcodeSupportedFormats.QR_CODE,
-              (window as any).Html5QrcodeSupportedFormats.EAN_13,
-              (window as any).Html5QrcodeSupportedFormats.CODE_128,
-              (window as any).Html5QrcodeSupportedFormats.CODE_39,
-            ],
-            experimentalFeatures: {
-              useBarCodeDetectorIfSupported: true
-            }
-          },
-          false
-        );
-
-        const onScanSuccess = (decodedText: string) => {
-          setScanResult(decodedText);
-          setIsScanning(false);
-          scannerRef.current?.clear().catch((error: any) => {
-            console.error("Failed to clear html5QrcodeScanner", error);
-          });
-          handleDecodedCode(decodedText);
-        };
-
-        const onScanError = (errorMessage: string) => {
-          // Ne pas afficher les erreurs de scan normales
-          if (!errorMessage.includes('NotFoundException')) {
-            console.warn(`QR Code Scan Error: ${errorMessage}`);
+      const initScanner = async () => {
+        try {
+          // Vérifier si la bibliothèque est chargée
+          if (!window.Html5QrcodeScanner) {
+            toast({
+              title: "Erreur",
+              description: "Bibliothèque de scan non chargée. Rechargez la page.",
+              variant: "destructive"
+            });
+            return;
           }
-        };
 
-        scannerRef.current.render(onScanSuccess, onScanError);
-      } catch (error) {
-        console.error('Scanner initialization error:', error);
-        setCameraError('Impossible d\'accéder à la caméra. Vérifiez les permissions.');
-      }
+          // Créer le scanner
+          scannerRef.current = new window.Html5QrcodeScanner(
+            qrCodeRegionId,
+            {
+              fps: 10,
+              qrbox: { width: 250, height: 250 },
+              formatsToSupport: [
+                window.Html5QrcodeSupportedFormats.QR_CODE,
+                window.Html5QrcodeSupportedFormats.EAN_13,
+                window.Html5QrcodeSupportedFormats.CODE_128,
+                window.Html5QrcodeSupportedFormats.CODE_39,
+              ],
+              rememberLastUsedCamera: true,
+              showTorchButtonIfSupported: true,
+              showZoomSliderIfSupported: true,
+            },
+            false
+          );
+
+          // Callbacks
+          const onScanSuccess = (decodedText: string) => {
+            console.log('Code scanné:', decodedText);
+            setIsScanning(false);
+            scannerRef.current?.clear();
+            handleDecodedCode(decodedText);
+          };
+
+          const onScanError = (errorMessage: string) => {
+            // Ignorer les erreurs normales de scan
+            if (!errorMessage.includes('NotFoundException')) {
+              console.warn('Scan error:', errorMessage);
+            }
+          };
+
+          // Démarrer le scan
+          scannerRef.current.render(onScanSuccess, onScanError);
+
+        } catch (error) {
+          console.error('Erreur d\'initialisation:', error);
+          toast({
+            title: "Erreur",
+            description: "Impossible d'initialiser le scanner. Vérifiez les permissions caméra.",
+            variant: "destructive"
+          });
+        }
+      };
+
+      initScanner();
     } else if (scannerRef.current) {
-      scannerRef.current.clear().catch((error: any) => {
-        console.error("Failed to clear html5QrcodeScanner", error);
-      });
+      scannerRef.current.clear();
       scannerRef.current = null;
     }
 
     return () => {
       if (scannerRef.current) {
-        scannerRef.current.clear().catch((error: any) => {
-          console.error("Failed to clear html5QrcodeScanner on unmount", error);
-        });
+        scannerRef.current.clear();
       }
     };
-  }, [isOpen, isScanning]);
+  }, [isOpen, isScanning, toast]);
 
   const handleDecodedCode = async (code: string) => {
     try {
-      // Vérifier si c'est un code produit existant
-      const existingProduct = products.find(p => p.barcode === code || p.code === code);
+      // Chercher le produit existant
+      const existingProduct = products.find(p => 
+        p.barcode === code || p.code === code
+      );
       
       if (existingProduct) {
-        // Produit existant trouvé
+        // Produit trouvé
         const productData = {
           id: existingProduct.id,
           name: existingProduct.name,
@@ -122,12 +135,9 @@ const RealQRScanner: React.FC<RealQRScannerProps> = ({
           title: "Produit trouvé !",
           description: `${existingProduct.name} - Stock: ${existingProduct.current_stock}`,
         });
-
-        // Log d'audit
-        logProductAction('qr_scan_found', existingProduct.id, undefined, { scanned_code: code });
         
       } else {
-        // Produit non trouvé - proposer de l'ajouter
+        // Produit non trouvé
         const productData = {
           name: `Produit ${code}`,
           code: code,
@@ -141,7 +151,7 @@ const RealQRScanner: React.FC<RealQRScannerProps> = ({
         
         toast({
           title: "Produit non trouvé",
-          description: "Ce produit n'existe pas dans votre stock. Voulez-vous l'ajouter ?",
+          description: "Ce produit n'existe pas. Voulez-vous l'ajouter ?",
           action: (
             <Button 
               size="sm" 
@@ -155,9 +165,9 @@ const RealQRScanner: React.FC<RealQRScannerProps> = ({
         onProductNotFound?.(code);
       }
     } catch (error) {
-      console.error('Error handling decoded code:', error);
+      console.error('Erreur traitement code:', error);
       toast({
-        title: "Erreur de scan",
+        title: "Erreur",
         description: "Impossible de traiter le code scanné",
         variant: "destructive"
       });
@@ -187,18 +197,12 @@ const RealQRScanner: React.FC<RealQRScannerProps> = ({
           description: `${newProduct.name} a été ajouté à votre stock`,
         });
 
-        // Log d'audit
-        logProductAction('product_added_via_qr', result.data[0].id, undefined, { 
-          scanned_code: productData.code,
-          method: 'qr_scanner'
-        });
-
         onProductFound(result.data[0]);
       }
     } catch (error) {
-      console.error('Error adding new product:', error);
+      console.error('Erreur ajout produit:', error);
       toast({
-        title: "Erreur d'ajout",
+        title: "Erreur",
         description: "Impossible d'ajouter le produit",
         variant: "destructive"
       });
@@ -221,9 +225,7 @@ const RealQRScanner: React.FC<RealQRScannerProps> = ({
   const openScanner = () => {
     setIsOpen(true);
     setIsScanning(true);
-    setScanResult(null);
     setManualCode('');
-    setCameraError(null);
   };
 
   const closeScanner = () => {
@@ -258,28 +260,17 @@ const RealQRScanner: React.FC<RealQRScannerProps> = ({
           <div className="space-y-4">
             {/* Scanner QR */}
             {isScanning && (
-              <div className="space-y-4">
-                {cameraError ? (
-                  <Card className="p-4">
-                    <div className="flex items-center gap-2 text-destructive">
-                      <AlertTriangle className="w-4 h-4" />
-                      <span>{cameraError}</span>
-                    </div>
-                  </Card>
-                ) : (
-                  <div className="relative">
-                    <div id={qrCodeRegionId} className="w-full"></div>
-                    <div className="absolute top-2 right-2">
-                      <Button
-                        size="sm"
-                        variant="destructive"
-                        onClick={() => setIsScanning(false)}
-                      >
-                        <X className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  </div>
-                )}
+              <div className="relative">
+                <div id={qrCodeRegionId} className="w-full"></div>
+                <div className="absolute top-2 right-2">
+                  <Button
+                    size="sm"
+                    variant="destructive"
+                    onClick={() => setIsScanning(false)}
+                  >
+                    <X className="w-4 h-4" />
+                  </Button>
+                </div>
               </div>
             )}
 
@@ -384,4 +375,4 @@ const RealQRScanner: React.FC<RealQRScannerProps> = ({
   );
 };
 
-export default RealQRScanner;
+export default SimpleQRScanner;

@@ -32,8 +32,8 @@
     <meta name="twitter:image" content="https://eboo-gest.vercel.app/logo-ebo-gest.png" />
 
     <!-- Favicon -->
-    <link rel="icon" type="image/png" href="/favicon-ebo-gest.png" />
-    <link rel="apple-touch-icon" href="/apple-touch-icon-ebo-gest.png" />
+    <link rel="icon" type="image/png" href="/logo-ebo-gest.png" />
+    <link rel="apple-touch-icon" href="/logo-ebo-gest.png" />
     
     <!-- Manifest -->
     <link rel="manifest" href="/manifest.json" />
@@ -54,7 +54,9 @@
     </script>
 
     <!-- HTML5 QR Code Scanner -->
-    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js" 
+            onload="console.log('HTML5 QR Code Scanner loaded successfully')"
+            onerror="console.error('Failed to load HTML5 QR Code Scanner')"></script>
 
     <!-- JSON-LD Structured Data -->
     <script type="application/ld+json">
