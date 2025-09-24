@@ -71,7 +71,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const signUp = async (email: string, password: string) => {
     const redirectUrl = getCallbackUrl();
     
-    const { error } = await supabase.auth.signUp({
+    // Log pour débogage
+    console.log('🔍 Inscription utilisateur:', {
+      email,
+      redirectUrl,
+      environment: process.env.NODE_ENV,
+      timestamp: new Date().toISOString()
+    });
+    
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
@@ -82,6 +90,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
       }
     });
+    
+    // Log des résultats
+    console.log('📧 Résultat inscription:', {
+      user: data.user ? {
+        id: data.user.id,
+        email: data.user.email,
+        email_confirmed: data.user.email_confirmed_at,
+        created_at: data.user.created_at
+      } : null,
+      session: data.session ? 'Session créée' : 'Aucune session',
+      error: error?.message || 'Aucune erreur'
+    });
+    
     return { error };
   };
 

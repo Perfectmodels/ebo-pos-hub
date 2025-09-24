@@ -1,3 +1,5 @@
+import { initSecurity, securityConfig } from './security';
+
 // Configuration pour supprimer les avertissements de console en développement
 if (process.env.NODE_ENV === 'development') {
   // Supprimer les avertissements React Router
@@ -24,4 +26,16 @@ if (process.env.NODE_ENV === 'development') {
     }
     originalError.apply(console, args);
   };
+}
+
+// Initialiser la sécurité
+initSecurity();
+
+// Désactiver les logs en production
+if (securityConfig.disableConsoleInProduction) {
+  console.log = () => {};
+  console.info = () => {};
+  console.debug = () => {};
+  console.warn = () => {};
+  console.error = () => {};
 }

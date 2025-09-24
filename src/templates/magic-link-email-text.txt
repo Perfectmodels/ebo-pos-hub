@@ -1,0 +1,43 @@
+===============================================
+         CONNEXION EBO'O GEST
+===============================================
+
+Bonjour,
+
+Vous avez demandé un lien de connexion pour accéder à votre compte 
+Ebo'o Gest.
+
+SE CONNECTER MAINTENANT :
+{{ .ConfirmationURL }}
+
+===============================================
+         INFORMATIONS DE SÉCURITÉ
+===============================================
+
+🔐 Ce lien est valide pendant 1 heure
+🔐 Il ne peut être utilisé qu'une seule fois
+🔐 Votre session sera sécurisée par chiffrement
+🔐 Aucun mot de passe n'est requis
+
+===============================================
+              ATTENTION
+===============================================
+
+⚠️ Si vous n'avez pas demandé ce lien de connexion, ignorez cet 
+   email et contactez immédiatement notre support.
+
+===============================================
+              SUPPORT
+===============================================
+
+Besoin d'aide ? Contactez notre équipe support :
+Asseko19@gmail.com
+
+===============================================
+
+Ebo'o Gest - Solution de gestion point de vente professionnelle
+
+Cet email a été envoyé depuis {{ .SiteURL }}
+Pour votre sécurité, ne partagez jamais ce lien.
+
+===============================================

@@ -1,0 +1,51 @@
+===============================================
+    CONFIRMATION RÉAUTHENTIFICATION
+===============================================
+
+Bonjour,
+
+Vous avez demandé une réauthentification pour votre compte Ebo'o Gest.
+
+VOTRE CODE DE CONFIRMATION :
+{{ .Token }}
+
+===============================================
+         COMMENT UTILISER CE CODE
+===============================================
+
+1. Copiez le code ci-dessus
+2. Retournez sur la page de connexion
+3. Collez le code dans le champ demandé
+4. Cliquez sur "Confirmer"
+
+===============================================
+         INFORMATIONS DE SÉCURITÉ
+===============================================
+
+🔐 Ce code est valide pendant 10 minutes
+🔐 Il ne peut être utilisé qu'une seule fois
+🔐 Ne partagez jamais ce code avec d'autres
+🔐 Votre session sera sécurisée après confirmation
+
+===============================================
+              ATTENTION
+===============================================
+
+⚠️ Si vous n'avez pas demandé cette réauthentification, ignorez cet 
+   email et contactez immédiatement notre support.
+
+===============================================
+              SUPPORT
+===============================================
+
+Besoin d'aide ? Contactez notre équipe support :
+Asseko19@gmail.com
+
+===============================================
+
+Ebo'o Gest - Solution de gestion point de vente professionnelle
+
+Cet email a été envoyé depuis {{ .SiteURL }}
+Pour votre sécurité, ne partagez jamais ce code.
+
+===============================================

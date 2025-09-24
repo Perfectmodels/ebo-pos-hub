@@ -1,0 +1,45 @@
+===============================================
+           INVITATION EBO'O GEST
+===============================================
+
+Bonjour,
+
+Vous avez été invité à rejoindre Ebo'o Gest, notre plateforme de 
+gestion de point de vente moderne et sécurisée.
+
+ACCEPTER L'INVITATION :
+{{ .ConfirmationURL }}
+
+===============================================
+           FONCTIONNALITÉS DISPONIBLES
+===============================================
+
+✓ Gestion complète des ventes et du stock
+✓ Suivi des employés en temps réel  
+✓ Génération de rapports détaillés
+✓ Interface mobile optimisée
+✓ Sécurité et protection des données
+✓ Notifications automatiques
+
+===============================================
+              SÉCURITÉ
+===============================================
+
+🔒 Ce lien d'invitation est sécurisé et expire automatiquement.
+   Ne partagez jamais vos identifiants de connexion.
+
+===============================================
+              SUPPORT
+===============================================
+
+Besoin d'aide ? Contactez notre équipe support :
+Asseko19@gmail.com
+
+===============================================
+
+Ebo'o Gest - Solution de gestion point de vente professionnelle
+
+Cet email a été envoyé depuis {{ .SiteURL }}
+Si vous n'avez pas demandé cette invitation, vous pouvez ignorer cet email.
+
+===============================================

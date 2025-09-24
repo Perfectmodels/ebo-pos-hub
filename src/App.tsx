@@ -31,25 +31,27 @@ import Contact from "./pages/Contact";
 import Guide from "./pages/Guide";
 import NotFound from "./pages/NotFound";
 import ErrorBoundary from "./components/ErrorBoundary";
+import DataProtection from "./components/DataProtection";
 
 const queryClient = new QueryClient();
 
 const App = () => (
   <ErrorBoundary>
-    <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <ActivityProvider>
-          <TooltipProvider>
-            <Toaster />
-            <Sonner />
-            <PWAInstaller />
-            <PWANotifications />
-                <BrowserRouter
-                  future={{
-                    v7_startTransition: true,
-                    v7_relativeSplatPath: true
-                  }}
-                >
+    <DataProtection>
+      <QueryClientProvider client={queryClient}>
+        <AuthProvider>
+          <ActivityProvider>
+            <TooltipProvider>
+              <Toaster />
+              <Sonner />
+              <PWAInstaller />
+              <PWANotifications />
+              <BrowserRouter
+                future={{
+                  v7_startTransition: true,
+                  v7_relativeSplatPath: true
+                }}
+              >
           <Routes>
                   {/* Public Routes */}
                   <Route path="/" element={<Home />} />
@@ -129,11 +131,12 @@ const App = () => (
                   {/* Catch all - 404 */}
                   <Route path="*" element={<NotFound />} />
           </Routes>
-            </BrowserRouter>
-          </TooltipProvider>
-        </ActivityProvider>
-      </AuthProvider>
-    </QueryClientProvider>
+              </BrowserRouter>
+            </TooltipProvider>
+          </ActivityProvider>
+        </AuthProvider>
+      </QueryClientProvider>
+    </DataProtection>
   </ErrorBoundary>
 );
 
