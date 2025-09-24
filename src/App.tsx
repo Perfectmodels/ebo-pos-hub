@@ -20,6 +20,9 @@ import Personnel from "./pages/Personnel";
 import Rapports from "./pages/Rapports";
 import Parametres from "./pages/Parametres";
 import AdminPanel from "./pages/AdminPanel";
+import AuthErrorHandler from "./components/AuthErrorHandler";
+import AuthCallbackHandler from "./components/AuthCallbackHandler";
+import ConfirmSignup from "./pages/ConfirmSignup";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -33,10 +36,13 @@ const App = () => (
           <Sonner />
           <BrowserRouter>
           <Routes>
-            {/* Public Routes */}
-            <Route path="/" element={<Home />} />
-            <Route path="/auth" element={<Auth />} />
-            <Route path="/inscription-pme" element={<InscriptionPME />} />
+                  {/* Public Routes */}
+                  <Route path="/" element={<Home />} />
+                  <Route path="/auth" element={<Auth />} />
+                  <Route path="/auth-error" element={<AuthErrorHandler />} />
+                  <Route path="/auth/callback" element={<AuthCallbackHandler />} />
+                  <Route path="/confirm-signup" element={<ConfirmSignup />} />
+                  <Route path="/inscription-pme" element={<InscriptionPME />} />
             
             {/* Protected Routes */}
             <Route path="/dashboard" element={

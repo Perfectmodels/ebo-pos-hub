@@ -6,6 +6,8 @@ import { useSales } from "@/hooks/useSales";
 import { useProducts } from "@/hooks/useProducts";
 import { useEmployees } from "@/hooks/useEmployees";
 import { useAuth } from "@/contexts/AuthContext";
+import NewUserWelcome from "@/components/NewUserWelcome";
+import EmptyDashboard from "@/components/EmptyDashboard";
 import { 
   DollarSign, 
   ShoppingCart, 
@@ -44,8 +46,20 @@ export default function Dashboard() {
   const { sales, loading: salesLoading, getTodayStats, getWeeklyStats } = useSales();
   const { products, loading: productsLoading } = useProducts();
   const { employees, loading: employeesLoading } = useEmployees();
-  
+  const [showWelcome, setShowWelcome] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+
+  // Détecter si c'est un nouvel utilisateur
+  useEffect(() => {
+    if (user) {
+      const isNewUser = !localStorage.getItem('user_has_data');
+      const hasNoData = sales.length === 0 && products.length === 0 && employees.length === 0;
+      
+      if (isNewUser || hasNoData) {
+        setShowWelcome(true);
+      }
+    }
+  }, [user, sales.length, products.length, employees.length]);
 
   // Données réelles calculées
   const todayStats = getTodayStats();
@@ -140,6 +154,23 @@ export default function Dashboard() {
   };
 
   const loading = salesLoading || productsLoading || employeesLoading;
+
+  // Si c'est un nouvel utilisateur, afficher le guide de bienvenue
+  if (showWelcome) {
+    return (
+      <NewUserWelcome 
+        onComplete={() => {
+          setShowWelcome(false);
+          localStorage.setItem('user_has_data', 'true');
+        }} 
+      />
+    );
+  }
+
+  // Si l'utilisateur n'a pas de données, afficher le dashboard vide
+  if (sales.length === 0 && products.length === 0 && employees.length === 0) {
+    return <EmptyDashboard />;
+  }
 
   return (
     <div className="p-6 space-y-6 animate-fade-in">
