@@ -7,9 +7,11 @@ import {
   Settings, 
   Home,
   UserCheck,
-  TrendingUp 
+  TrendingUp,
+  LogOut
 } from "lucide-react";
 import { NavLink } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
 import {
   Sidebar,
   SidebarContent,
@@ -19,12 +21,12 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  SidebarTrigger,
+  SidebarFooter,
   useSidebar,
 } from "@/components/ui/sidebar";
 
 const navigation = [
-  { title: "Dashboard", url: "/", icon: Home },
+  { title: "Dashboard", url: "/dashboard", icon: Home },
   { title: "Ventes", url: "/ventes", icon: ShoppingCart },
   { title: "Stock", url: "/stock", icon: Package },
   { title: "Produits", url: "/produits", icon: BarChart3 },
@@ -36,7 +38,12 @@ const navigation = [
 
 export function AppSidebar() {
   const { state } = useSidebar();
+  const { signOut, user } = useAuth();
   const collapsed = state === "collapsed";
+
+  const handleSignOut = async () => {
+    await signOut();
+  };
 
   const getNavClass = ({ isActive }: { isActive: boolean }) =>
     isActive 
@@ -91,13 +98,22 @@ export function AppSidebar() {
         </SidebarGroup>
 
         {/* Footer */}
-        <div className="mt-auto p-4 border-t border-sidebar-border">
-          {!collapsed && (
-            <div className="text-xs text-sidebar-foreground/50">
-              Version 1.0.0
-            </div>
-          )}
-        </div>
+        <SidebarFooter className="border-t border-sidebar-border">
+          <SidebarMenu>
+            <SidebarMenuItem>
+              <div className="flex items-center gap-2 px-2 py-1 text-sm text-sidebar-foreground">
+                <UserCheck className="h-4 w-4" />
+                {!collapsed && <span className="truncate">{user?.email}</span>}
+              </div>
+            </SidebarMenuItem>
+            <SidebarMenuItem>
+              <SidebarMenuButton onClick={handleSignOut} className="text-sidebar-foreground hover:bg-sidebar-accent">
+                <LogOut className="h-4 w-4" />
+                {!collapsed && <span>Déconnexion</span>}
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          </SidebarMenu>
+        </SidebarFooter>
       </SidebarContent>
     </Sidebar>
   );
