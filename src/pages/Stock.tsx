@@ -7,6 +7,7 @@ import { useProducts } from "@/hooks/useProducts";
 import { useStockMovements } from "@/hooks/useStockMovements";
 import { useToast } from "@/hooks/use-toast";
 import QRScanner from "@/components/QRScanner";
+import RealQRScanner from "@/components/RealQRScanner";
 import QuickAddProduct from "@/components/QuickAddProduct";
 import QRGenerator from "@/components/QRGenerator";
 import SobragaBrands from "@/components/SobragaBrands";
@@ -115,22 +116,22 @@ export default function Stock() {
           </p>
         </div>
         <div className="flex gap-2">
-          <QRScanner 
-            onProductFound={(productData) => {
-              // Pré-remplir le formulaire d'ajout avec les données scannées
-              setShowAddProduct(true);
-            }}
-            onProductNotFound={(code) => {
-              toast({
-                title: "Produit non trouvé",
-                description: `Aucun produit trouvé pour le code: ${code}`,
-                variant: "destructive"
-              });
-            }}
-            mode="add"
-            title="Scanner produit"
-            description="Scannez un code QR pour ajouter un produit"
-          />
+      <RealQRScanner
+        onProductFound={(productData) => {
+          // Pré-remplir le formulaire d'ajout avec les données scannées
+          setShowAddProduct(true);
+        }}
+        onProductNotFound={(code) => {
+          toast({
+            title: "Produit non trouvé",
+            description: `Aucun produit trouvé pour le code: ${code}`,
+            variant: "destructive"
+          });
+        }}
+        mode="add"
+        title="Scanner produit"
+        description="Scannez un code QR pour ajouter un produit"
+      />
           <Button variant="outline" onClick={() => setShowSobragaBrands(true)}>
             <Package className="w-4 h-4 mr-2" />
             Marques Sobraga

@@ -8,6 +8,7 @@ import { useSales } from "@/hooks/useSales";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import QRScanner from "@/components/QRScanner";
+import RealQRScanner from "@/components/RealQRScanner";
 import { 
   ShoppingCart, 
   Plus, 
@@ -173,19 +174,19 @@ export default function Ventes() {
                 className="pl-10"
               />
             </div>
-            <QRScanner 
-              onProductFound={handleQRScanned}
-              onProductNotFound={(code) => {
-                toast({
-                  title: "Produit non trouvé",
-                  description: `Aucun produit trouvé pour le code: ${code}`,
-                  variant: "destructive"
-                });
-              }}
-              mode="sell"
-              title="Scanner produit"
-              description="Scannez un code QR pour ajouter un produit au panier"
-            />
+      <RealQRScanner
+        onProductFound={handleQRScanned}
+        onProductNotFound={(code) => {
+          toast({
+            title: "Produit non trouvé",
+            description: `Aucun produit trouvé pour le code: ${code}`,
+            variant: "destructive"
+          });
+        }}
+        mode="sell"
+        title="Scanner produit"
+        description="Scannez un code QR pour ajouter un produit au panier"
+      />
           </div>
 
           {/* Products Grid */}
