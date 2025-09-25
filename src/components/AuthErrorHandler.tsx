@@ -30,7 +30,7 @@ export default function AuthErrorHandler() {
   }, [searchParams, toast]);
 
   const handleRetry = () => {
-    navigate('/auth');
+    navigate('/login');
   };
 
   const handleGoHome = () => {

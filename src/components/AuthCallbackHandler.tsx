@@ -68,7 +68,7 @@ export default function AuthCallbackHandler() {
   }, [searchParams, user, navigate, toast]);
 
   const handleRetry = () => {
-    navigate('/auth');
+    navigate('/login');
   };
 
   const handleGoHome = () => {

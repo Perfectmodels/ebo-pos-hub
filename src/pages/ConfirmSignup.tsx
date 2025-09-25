@@ -82,7 +82,7 @@ export default function ConfirmSignup() {
   }, [searchParams, user, navigate, toast]);
 
   const handleRetry = () => {
-    navigate('/auth');
+    navigate('/login');
   };
 
   const handleGoHome = () => {

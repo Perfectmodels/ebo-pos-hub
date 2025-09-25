@@ -131,10 +131,10 @@ export default function Contact() {
                   Admin
                 </Button>
               </Link>
-              <Link to="/auth">
+              <Link to="/login">
                 <Button variant="outline">Connexion</Button>
               </Link>
-              <Link to="/auth">
+              <Link to="/register">
                 <Button className="btn-gradient">Inscription PME</Button>
               </Link>
             </div>
@@ -316,13 +316,13 @@ export default function Contact() {
               </CardHeader>
               <CardContent className="space-y-3">
                 <Button variant="outline" className="w-full justify-start" asChild>
-                  <Link to="/auth">
+                  <Link to="/login">
                     <CheckCircle className="w-4 h-4 mr-2" />
                     Problème de connexion
                   </Link>
                 </Button>
                 <Button variant="outline" className="w-full justify-start" asChild>
-                  <Link to="/auth">
+                  <Link to="/register">
                     <CheckCircle className="w-4 h-4 mr-2" />
                     Problème d'inscription
                   </Link>

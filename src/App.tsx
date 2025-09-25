@@ -30,6 +30,8 @@ import AdminPanel from "./pages/AdminPanelCMS";
 import AdminLogin from "./pages/AdminLogin";
 import Contact from "./pages/Contact";
 import Guide from "./pages/Guide";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
+import TermsOfService from "./pages/TermsOfService";
 import NotFound from "./pages/NotFound";
 import ErrorBoundary from "./components/ErrorBoundary";
 import DataProtection from "./components/DataProtection";
@@ -61,6 +63,8 @@ const App = () => (
                     <Route path="/register" element={<Register />} />
                     <Route path="/contact" element={<Contact />} />
                     <Route path="/guide" element={<Guide />} />
+                    <Route path="/privacy" element={<PrivacyPolicy />} />
+                    <Route path="/terms" element={<TermsOfService />} />
                     <Route path="/admin-login" element={<AdminLogin />} />
 
                     {/* Protected Routes */}

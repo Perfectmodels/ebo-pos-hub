@@ -203,7 +203,7 @@ export default function Guide() {
               <Link to="/contact">
                 <Button variant="ghost">Support</Button>
               </Link>
-              <Link to="/auth">
+              <Link to="/login">
                 <Button variant="outline">Connexion</Button>
               </Link>
               <Link to="/inscription">

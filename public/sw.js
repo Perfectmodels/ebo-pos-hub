@@ -85,8 +85,8 @@ async function handleFirebaseRequest(request) {
     // Essayer le réseau en premier pour les données Firebase
     const networkResponse = await fetch(request);
     
-    // Mettre en cache la réponse si elle est valide
-    if (networkResponse.ok) {
+    // Ne pas mettre en cache les requêtes POST, PUT, DELETE, HEAD
+    if (networkResponse.ok && ['GET', 'OPTIONS'].includes(request.method)) {
       const cache = await caches.open(CACHE_NAME);
       cache.put(request, networkResponse.clone());
     }
@@ -148,7 +148,8 @@ async function handleDefaultRequest(request) {
   try {
     const networkResponse = await fetch(request);
     
-    if (networkResponse.ok) {
+    // Ne pas mettre en cache les requêtes POST, PUT, DELETE, HEAD
+    if (networkResponse.ok && ['GET', 'OPTIONS'].includes(request.method)) {
       const cache = await caches.open(CACHE_NAME);
       cache.put(request, networkResponse.clone());
     }

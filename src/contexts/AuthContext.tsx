@@ -159,7 +159,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const signOut = async () => {
-    await firebaseSignOut(auth);
+    try {
+      await firebaseSignOut(auth);
+      // Nettoyer les données locales
+      localStorage.removeItem('userActivity');
+      localStorage.removeItem('admin_authenticated');
+      localStorage.removeItem('admin_login_time');
+      // La redirection sera gérée par ProtectedRoute
+    } catch (error) {
+      console.error('Erreur lors de la déconnexion:', error);
+    }
   };
 
   const forgotPassword = async (email: string) => {

@@ -27,7 +27,7 @@ export default function AdminLogin() {
               </Link>
             </div>
             <div className="flex items-center space-x-4">
-              <Link to="/auth">
+              <Link to="/login">
                 <span className="text-sm text-muted-foreground hover:text-primary">
                   Connexion utilisateur
                 </span>
