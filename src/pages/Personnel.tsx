@@ -6,6 +6,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useEmployees, Employee } from "@/hooks/useEmployees";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
+import { usePermissions, PermissionGate } from "@/utils/permissions";
 import AddEmployeeForm from "@/components/AddEmployeeForm";
 import EditEmployeeForm from "@/components/EditEmployeeForm"; 
 import TimeClock from "@/components/TimeClock";
@@ -25,6 +26,7 @@ export default function Personnel() {
   const { user } = useAuth();
   const { employees, loading: employeesLoading, addEmployee, updateEmployee, deleteEmployee } = useEmployees();
   const { toast } = useToast();
+  const { isOwner, hasPermission } = usePermissions();
   
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
@@ -82,18 +84,24 @@ export default function Personnel() {
           <p className="text-muted-foreground mt-1">Ajoutez, modifiez et suivez les membres de votre équipe.</p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" onClick={() => setShowProfiles(true)}>
-            <Shield className="w-4 h-4 mr-2" />
-            Profils
-          </Button>
-          <Button variant="outline" onClick={() => setShowTimeClock(true)} disabled={!user}>
-            <Clock className="w-4 h-4 mr-2" />
-            Pointage
-          </Button>
-          <Button className="btn-gradient" onClick={() => setShowAddModal(true)} disabled={!user}>
-            <Plus className="w-4 h-4 mr-2" />
-            Ajouter Employé
-          </Button>
+          <PermissionGate permission="manage_employees">
+            <Button variant="outline" onClick={() => setShowProfiles(true)}>
+              <Shield className="w-4 h-4 mr-2" />
+              Profils
+            </Button>
+          </PermissionGate>
+          <PermissionGate permission="manage_schedule">
+            <Button variant="outline" onClick={() => setShowTimeClock(true)} disabled={!user}>
+              <Clock className="w-4 h-4 mr-2" />
+              Pointage
+            </Button>
+          </PermissionGate>
+          <PermissionGate permission="add_employee">
+            <Button className="btn-gradient" onClick={() => setShowAddModal(true)} disabled={!user}>
+              <Plus className="w-4 h-4 mr-2" />
+              Ajouter Employé
+            </Button>
+          </PermissionGate>
         </div>
       </div>
 

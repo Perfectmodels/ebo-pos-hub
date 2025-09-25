@@ -10,6 +10,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Employee } from '@/hooks/useEmployees';
 import PinInput from '@/components/PinInput';
 import { useToast } from '@/hooks/use-toast';
+import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts';
+import KeyboardShortcutsModal from '@/components/KeyboardShortcutsModal';
 import { 
   Trash2, 
   ShoppingCart, 
@@ -36,16 +38,39 @@ export default function Ventes() {
   const { addSale } = useSales();
   const { toast } = useToast();
   
+  // Activer les raccourcis clavier
+  useKeyboardShortcuts();
+  
   const [verifiedEmployee, setVerifiedEmployee] = useState<Employee | null>(null);
   const [cart, setCart] = useState<CartItem[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [finalizing, setFinalizing] = useState(false);
+  const [skipPinForOwner, setSkipPinForOwner] = useState(false);
 
   const handleEmployeeVerified = (employee: Employee) => {
     setVerifiedEmployee(employee);
     toast({
       title: `Bienvenue, ${employee.full_name}!`,
       description: "Vous pouvez maintenant commencer à vendre.",
+    });
+  };
+
+  const handleOwnerAccess = () => {
+    const ownerEmployee = {
+      id: user?.uid || 'owner',
+      full_name: 'Propriétaire',
+      email: user?.email || '',
+      role: 'owner',
+      pin_code: '0000',
+      business_id: user?.uid || '',
+      status: 'active',
+      created_at: new Date().toISOString()
+    };
+    setVerifiedEmployee(ownerEmployee);
+    setSkipPinForOwner(true);
+    toast({
+      title: "Accès Propriétaire",
+      description: "Vous avez accès complet à la caisse.",
     });
   };
 
@@ -141,7 +166,42 @@ export default function Ventes() {
   );
 
   if (!user || !verifiedEmployee) {
-    return <PinInput onVerified={handleEmployeeVerified} />;
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
+        <div className="w-full max-w-md space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-center">Accès Caisse</CardTitle>
+              <CardDescription className="text-center">
+                Choisissez votre mode d'accès
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <Button 
+                onClick={handleOwnerAccess}
+                className="w-full btn-gradient"
+                size="lg"
+                data-tutorial="owner-access"
+              >
+                <User className="w-5 h-5 mr-2" />
+                Accès Propriétaire
+              </Button>
+              <div className="relative">
+                <div className="absolute inset-0 flex items-center">
+                  <span className="w-full border-t" />
+                </div>
+                <div className="relative flex justify-center text-xs uppercase">
+                  <span className="bg-background px-2 text-muted-foreground">
+                    Ou
+                  </span>
+                </div>
+              </div>
+              <PinInput onVerified={handleEmployeeVerified} />
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -155,6 +215,7 @@ export default function Ventes() {
               placeholder="Rechercher un produit par nom..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
+              data-tutorial="search"
             />
           </CardContent>
         </Card>
@@ -262,6 +323,7 @@ export default function Ventes() {
               disabled={cart.length === 0 || finalizing}
               className="w-full btn-gradient"
               size="lg"
+              data-tutorial="finalize-sale"
             >
               {finalizing ? (
                 <Loader2 className="w-5 h-5 mr-2 animate-spin"/>
@@ -272,6 +334,11 @@ export default function Ventes() {
             </Button>
           </div>
         </Card>
+      </div>
+      
+      {/* Modal des raccourcis clavier */}
+      <div className="fixed bottom-4 right-4">
+        <KeyboardShortcutsModal />
       </div>
     </div>
   );

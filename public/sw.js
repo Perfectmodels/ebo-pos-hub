@@ -1,7 +1,6 @@
-// Service Worker pour Ebo'o Gest PWA
-const CACHE_NAME = 'eboo-gest-v1.0.0';
-const STATIC_CACHE = 'eboo-gest-static-v1.0.0';
-const DYNAMIC_CACHE = 'eboo-gest-dynamic-v1.0.0';
+// Service Worker pour Ebo'o Gest - Fonctionnement Offline
+const CACHE_NAME = 'ebo-gest-v1';
+const OFFLINE_URL = '/offline.html';
 
 // Ressources à mettre en cache
 const STATIC_ASSETS = [
@@ -9,178 +8,300 @@ const STATIC_ASSETS = [
   '/index.html',
   '/manifest.json',
   '/logo-ebo-gest.png',
-  '/favicon.ico',
-  '/assets/index.css',
-  '/assets/index.js'
+  '/offline.html'
 ];
 
-// Installation du Service Worker
+// Installer le Service Worker
 self.addEventListener('install', (event) => {
-  console.log('[SW] Installation en cours...');
+  console.log('🔧 Service Worker: Installation...');
   
   event.waitUntil(
-    caches.open(STATIC_CACHE)
+    caches.open(CACHE_NAME)
       .then((cache) => {
-        console.log('[SW] Mise en cache des ressources statiques');
+        console.log('📦 Service Worker: Mise en cache des ressources statiques');
         return cache.addAll(STATIC_ASSETS);
       })
       .then(() => {
-        console.log('[SW] Installation terminée');
+        console.log('✅ Service Worker: Installation terminée');
         return self.skipWaiting();
       })
-      .catch((error) => {
-        console.error('[SW] Erreur lors de l\'installation:', error);
-      })
   );
 });
 
-// Activation du Service Worker
+// Activer le Service Worker
 self.addEventListener('activate', (event) => {
-  console.log('[SW] Activation en cours...');
+  console.log('🚀 Service Worker: Activation...');
   
   event.waitUntil(
-    caches.keys()
-      .then((cacheNames) => {
-        return Promise.all(
-          cacheNames.map((cacheName) => {
-            if (cacheName !== STATIC_CACHE && cacheName !== DYNAMIC_CACHE) {
-              console.log('[SW] Suppression de l\'ancien cache:', cacheName);
-              return caches.delete(cacheName);
-            }
-          })
-        );
-      })
-      .then(() => {
-        console.log('[SW] Activation terminée');
-        return self.clients.claim();
-      })
+    caches.keys().then((cacheNames) => {
+      return Promise.all(
+        cacheNames.map((cacheName) => {
+          if (cacheName !== CACHE_NAME) {
+            console.log('🗑️ Service Worker: Suppression ancien cache:', cacheName);
+            return caches.delete(cacheName);
+          }
+        })
+      );
+    }).then(() => {
+      console.log('✅ Service Worker: Activation terminée');
+      return self.clients.claim();
+    })
   );
 });
 
-// Interception des requêtes
+// Intercepter les requêtes réseau
 self.addEventListener('fetch', (event) => {
   const { request } = event;
   const url = new URL(request.url);
-  
-  // Ignorer les requêtes non-HTTP/HTTPS (chrome-extension, moz-extension, etc.)
+
+  // Ignorer les requêtes non-HTTP
   if (!url.protocol.startsWith('http')) {
     return;
   }
-  
-  // Stratégie Cache First pour les ressources statiques
-  if (request.method === 'GET') {
-    event.respondWith(
-      caches.match(request)
-        .then((cachedResponse) => {
-          if (cachedResponse) {
-            console.log('[SW] Ressource trouvée en cache:', request.url);
-            return cachedResponse;
-          }
-          
-          // Si pas en cache, récupérer depuis le réseau
-          return fetch(request)
-            .then((networkResponse) => {
-              // Mettre en cache les réponses réussies
-              if (networkResponse.status === 200) {
-                const responseClone = networkResponse.clone();
-                caches.open(DYNAMIC_CACHE)
-                  .then((cache) => {
-                    cache.put(request, responseClone);
-                  })
-                  .catch((error) => {
-                    console.warn('[SW] Erreur lors de la mise en cache:', error);
-                  });
-              }
-              return networkResponse;
-            })
-            .catch(() => {
-              // Fallback pour les pages HTML
-              if (request.headers.get('accept').includes('text/html')) {
-                return caches.match('/index.html');
-              }
-            });
-        })
-    );
+
+  // Stratégie pour les API Firebase
+  if (url.hostname.includes('firestore.googleapis.com') || 
+      url.hostname.includes('firebase.googleapis.com')) {
+    event.respondWith(handleFirebaseRequest(request));
+    return;
   }
+
+  // Stratégie pour les ressources statiques
+  if (request.destination === 'document' || 
+      request.destination === 'script' || 
+      request.destination === 'style' ||
+      request.destination === 'image') {
+    event.respondWith(handleStaticRequest(request));
+    return;
+  }
+
+  // Stratégie par défaut: Network First
+  event.respondWith(handleDefaultRequest(request));
 });
 
-// Gestion des notifications push
-self.addEventListener('push', (event) => {
-  console.log('[SW] Notification push reçue');
-  
-  const options = {
-    body: event.data ? event.data.text() : 'Nouvelle notification d\'Ebo\'o Gest',
-    icon: '/logo-ebo-gest.png',
-    badge: '/logo-ebo-gest.png',
-    vibrate: [200, 100, 200],
-    data: {
-      dateOfArrival: Date.now(),
-      primaryKey: 1
-    },
-    actions: [
+// Gérer les requêtes Firebase (Cache First avec fallback réseau)
+async function handleFirebaseRequest(request) {
+  try {
+    // Essayer le réseau en premier pour les données Firebase
+    const networkResponse = await fetch(request);
+    
+    // Mettre en cache la réponse si elle est valide
+    if (networkResponse.ok) {
+      const cache = await caches.open(CACHE_NAME);
+      cache.put(request, networkResponse.clone());
+    }
+    
+    return networkResponse;
+  } catch (error) {
+    console.log('📴 Service Worker: Réseau indisponible, utilisation du cache');
+    
+    // Fallback sur le cache
+    const cachedResponse = await caches.match(request);
+    if (cachedResponse) {
+      return cachedResponse;
+    }
+    
+    // Si pas de cache et hors ligne, retourner une réponse d'erreur
+    return new Response(
+      JSON.stringify({ 
+        error: 'Données non disponibles hors ligne',
+        offline: true 
+      }),
       {
-        action: 'explore',
-        title: 'Ouvrir',
-        icon: '/logo-ebo-gest.png'
-      },
-      {
-        action: 'close',
-        title: 'Fermer',
-        icon: '/logo-ebo-gest.png'
+        status: 503,
+        statusText: 'Service Unavailable',
+        headers: { 'Content-Type': 'application/json' }
       }
-    ]
-  };
-  
-  event.waitUntil(
-    self.registration.showNotification('Ebo\'o Gest', options)
-  );
-});
-
-// Gestion des clics sur les notifications
-self.addEventListener('notificationclick', (event) => {
-  console.log('[SW] Clic sur notification:', event.action);
-  
-  event.notification.close();
-  
-  if (event.action === 'explore') {
-    event.waitUntil(
-      clients.openWindow('/')
     );
   }
-});
+}
 
-// Gestion de la synchronisation en arrière-plan
-self.addEventListener('sync', (event) => {
-  console.log('[SW] Synchronisation en arrière-plan:', event.tag);
+// Gérer les ressources statiques (Cache First)
+async function handleStaticRequest(request) {
+  const cachedResponse = await caches.match(request);
   
-  if (event.tag === 'background-sync') {
-    event.waitUntil(
-      // Ici vous pouvez ajouter la logique de synchronisation
-      // Par exemple, synchroniser les données avec le serveur
-      Promise.resolve()
-    );
+  if (cachedResponse) {
+    return cachedResponse;
   }
-});
+  
+  try {
+    const networkResponse = await fetch(request);
+    
+    if (networkResponse.ok) {
+      const cache = await caches.open(CACHE_NAME);
+      cache.put(request, networkResponse.clone());
+    }
+    
+    return networkResponse;
+  } catch (error) {
+    // Si c'est une requête de document et qu'on est hors ligne
+    if (request.destination === 'document') {
+      return caches.match(OFFLINE_URL);
+    }
+    
+    throw error;
+  }
+}
 
-// Gestion des messages du client
+// Gérer les requêtes par défaut (Network First)
+async function handleDefaultRequest(request) {
+  try {
+    const networkResponse = await fetch(request);
+    
+    if (networkResponse.ok) {
+      const cache = await caches.open(CACHE_NAME);
+      cache.put(request, networkResponse.clone());
+    }
+    
+    return networkResponse;
+  } catch (error) {
+    const cachedResponse = await caches.match(request);
+    
+    if (cachedResponse) {
+      return cachedResponse;
+    }
+    
+    throw error;
+  }
+}
+
+// Gérer les messages du client
 self.addEventListener('message', (event) => {
-  console.log('[SW] Message reçu:', event.data);
+  const { type, payload } = event.data;
   
-  if (event.data && event.data.type === 'SKIP_WAITING') {
-    self.skipWaiting();
-  }
-  
-  if (event.data && event.data.type === 'GET_VERSION') {
-    event.ports[0].postMessage({ version: CACHE_NAME });
+  switch (type) {
+    case 'SKIP_WAITING':
+      self.skipWaiting();
+      break;
+      
+    case 'GET_CACHE_STATUS':
+      getCacheStatus().then(status => {
+        event.ports[0].postMessage(status);
+      });
+      break;
+      
+    case 'CLEAR_CACHE':
+      clearCache().then(() => {
+        event.ports[0].postMessage({ success: true });
+      });
+      break;
+      
+    case 'CACHE_DATA':
+      cacheData(payload).then(() => {
+        event.ports[0].postMessage({ success: true });
+      });
+      break;
   }
 });
 
-// Gestion des erreurs
-self.addEventListener('error', (event) => {
-  console.error('[SW] Erreur:', event.error);
+// Background Sync pour les données hors ligne
+self.addEventListener('sync', (event) => {
+  if (event.tag === 'offline-sync') {
+    console.log('🔄 Service Worker: Background Sync déclenché');
+    event.waitUntil(syncOfflineData());
+  }
 });
 
-// Gestion des promesses rejetées
-self.addEventListener('unhandledrejection', (event) => {
-  console.error('[SW] Promesse rejetée:', event.reason);
+// Fonction de synchronisation des données hors ligne
+async function syncOfflineData() {
+  try {
+    // Récupérer les données en attente depuis IndexedDB
+    const pendingData = await getPendingData();
+    
+    for (const item of pendingData) {
+      try {
+        await syncDataItem(item);
+        await removePendingData(item.id);
+      } catch (error) {
+        console.error('❌ Erreur sync item:', error);
+      }
+    }
+    
+    console.log('✅ Service Worker: Synchronisation terminée');
+  } catch (error) {
+    console.error('❌ Erreur sync globale:', error);
+  }
+}
+
+// Obtenir le statut du cache
+async function getCacheStatus() {
+  const cache = await caches.open(CACHE_NAME);
+  const keys = await cache.keys();
+  
+  return {
+    cacheName: CACHE_NAME,
+    cachedItems: keys.length,
+    cacheSize: await getCacheSize(cache)
+  };
+}
+
+// Calculer la taille du cache
+async function getCacheSize(cache) {
+  const keys = await cache.keys();
+  let totalSize = 0;
+  
+  for (const key of keys) {
+    const response = await cache.match(key);
+    if (response) {
+      const blob = await response.blob();
+      totalSize += blob.size;
+    }
+  }
+  
+  return totalSize;
+}
+
+// Vider le cache
+async function clearCache() {
+  const cacheNames = await caches.keys();
+  await Promise.all(
+    cacheNames.map(cacheName => caches.delete(cacheName))
+  );
+}
+
+// Mettre en cache des données spécifiques
+async function cacheData(data) {
+  const cache = await caches.open(CACHE_NAME);
+  
+  for (const [url, content] of Object.entries(data)) {
+    const response = new Response(JSON.stringify(content), {
+      headers: { 'Content-Type': 'application/json' }
+    });
+    await cache.put(url, response);
+  }
+}
+
+// Simuler la récupération des données en attente
+async function getPendingData() {
+  // Cette fonction devrait interagir avec IndexedDB
+  // Pour l'instant, on retourne un tableau vide
+  return [];
+}
+
+// Simuler la synchronisation d'un élément
+async function syncDataItem(item) {
+  // Cette fonction devrait envoyer les données à Firebase
+  console.log('📤 Sync item:', item);
+}
+
+// Simuler la suppression des données synchronisées
+async function removePendingData(id) {
+  // Cette fonction devrait supprimer l'élément d'IndexedDB
+  console.log('🗑️ Remove pending data:', id);
+}
+
+// Notification de mise à jour disponible
+self.addEventListener('message', (event) => {
+  if (event.data && event.data.type === 'NEW_VERSION_AVAILABLE') {
+    self.clients.matchAll().then(clients => {
+      clients.forEach(client => {
+        client.postMessage({
+          type: 'UPDATE_AVAILABLE',
+          payload: { version: event.data.version }
+        });
+      });
+    });
+  }
 });
+
+console.log('🚀 Service Worker Ebo\'o Gest chargé et prêt');

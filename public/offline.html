@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ebo'o Gest - Mode Hors Ligne</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+        
+        .offline-container {
+            text-align: center;
+            max-width: 500px;
+            padding: 2rem;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .offline-icon {
+            width: 120px;
+            height: 120px;
+            margin: 0 auto 2rem;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 4rem;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            font-weight: 700;
+        }
+        
+        .subtitle {
+            font-size: 1.2rem;
+            margin-bottom: 2rem;
+            opacity: 0.9;
+        }
+        
+        .status-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 25px;
+            margin-bottom: 2rem;
+        }
+        
+        .status-dot {
+            width: 12px;
+            height: 12px;
+            background: #ff6b6b;
+            border-radius: 50%;
+            animation: blink 1s infinite;
+        }
+        
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0.3; }
+        }
+        
+        .features {
+            text-align: left;
+            margin: 2rem 0;
+        }
+        
+        .feature {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            padding: 0.5rem;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+        
+        .feature-icon {
+            width: 40px;
+            height: 40px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
+        
+        .retry-button {
+            background: rgba(255, 255, 255, 0.2);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            padding: 1rem 2rem;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 1rem;
+        }
+        
+        .retry-button:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+        }
+        
+        .footer {
+            margin-top: 2rem;
+            font-size: 0.9rem;
+            opacity: 0.7;
+        }
+        
+        @media (max-width: 600px) {
+            .offline-container {
+                margin: 1rem;
+                padding: 1.5rem;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .offline-icon {
+                width: 80px;
+                height: 80px;
+                font-size: 3rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="offline-container">
+        <div class="offline-icon">📱</div>
+        
+        <h1>Mode Hors Ligne</h1>
+        <p class="subtitle">Ebo'o Gest fonctionne même sans connexion</p>
+        
+        <div class="status-indicator">
+            <div class="status-dot"></div>
+            <span>Connexion Internet indisponible</span>
+        </div>
+        
+        <div class="features">
+            <div class="feature">
+                <div class="feature-icon">💾</div>
+                <div>
+                    <strong>Données mises en cache</strong>
+                    <br>
+                    <small>Vos données sont sauvegardées localement</small>
+                </div>
+            </div>
+            
+            <div class="feature">
+                <div class="feature-icon">🔄</div>
+                <div>
+                    <strong>Synchronisation automatique</strong>
+                    <br>
+                    <small>Les données se synchroniseront dès la reconnexion</small>
+                </div>
+            </div>
+            
+            <div class="feature">
+                <div class="feature-icon">⚡</div>
+                <div>
+                    <strong>Accès rapide</strong>
+                    <br>
+                    <small>Navigation fluide même hors ligne</small>
+                </div>
+            </div>
+        </div>
+        
+        <button class="retry-button" onclick="window.location.reload()">
+            🔄 Réessayer
+        </button>
+        
+        <div class="footer">
+            <p>Ebo'o Gest - Système de Gestion Professionnel</p>
+            <p>Votre application continuera à fonctionner normalement</p>
+        </div>
+    </div>
+
+    <script>
+        // Vérifier périodiquement la connexion
+        function checkConnection() {
+            if (navigator.onLine) {
+                // Rediriger vers l'application principale
+                window.location.href = '/';
+            }
+        }
+        
+        // Vérifier la connexion toutes les 5 secondes
+        setInterval(checkConnection, 5000);
+        
+        // Écouter les événements de connexion
+        window.addEventListener('online', () => {
+            console.log('🌐 Connexion rétablie!');
+            window.location.href = '/';
+        });
+        
+        window.addEventListener('offline', () => {
+            console.log('📴 Connexion perdue');
+        });
+        
+        // Ajouter un effet de clic sur le bouton
+        document.querySelector('.retry-button').addEventListener('click', function() {
+            this.style.transform = 'scale(0.95)';
+            setTimeout(() => {
+                this.style.transform = 'translateY(-2px)';
+            }, 150);
+        });
+    </script>
+</body>
+</html>

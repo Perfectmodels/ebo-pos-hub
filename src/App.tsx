@@ -10,6 +10,8 @@ import PWAInstaller from "@/components/PWAInstaller";
 import "@/config/console"; // Configuration console
 import { ActivityProvider } from "./contexts/ActivityContext";
 import { AuthProvider } from "./contexts/AuthContext";
+import { ThemeProvider } from "./contexts/ThemeContext";
+import { MultiUserProvider } from "./contexts/MultiUserContext";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import AdaptiveSidebar from "./components/AdaptiveSidebar";
 import AdaptiveDashboard from "./components/AdaptiveDashboard";
@@ -18,7 +20,7 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
 import Ventes from "./pages/Ventes";
-import Stock from "./pages/Stock";
+import StockNew from "./pages/StockNew";
 import Personnel from "./pages/Personnel";
 import Rapports from "./pages/Rapports";
 import Parametres from "./pages/Parametres";
@@ -39,8 +41,10 @@ const App = () => (
     <DataProtection>
       <QueryClientProvider client={queryClient}>
           <AuthProvider>
-            <ActivityProvider>
-              <TooltipProvider>
+            <ThemeProvider>
+              <ActivityProvider>
+                <MultiUserProvider>
+                  <TooltipProvider>
                 <Toaster />
                 <Sonner />
                 <PWAInstaller />
@@ -77,7 +81,14 @@ const App = () => (
                     <Route path="/stock" element={
                       <ProtectedRoute>
                         <AppLayout>
-                          <Stock />
+                          <StockNew />
+                        </AppLayout>
+                      </ProtectedRoute>
+                    } />
+                    <Route path="/inventory" element={
+                      <ProtectedRoute>
+                        <AppLayout>
+                          <StockNew />
                         </AppLayout>
                       </ProtectedRoute>
                     } />
@@ -122,8 +133,10 @@ const App = () => (
                     <Route path="*" element={<NotFound />} />
                   </Routes>
                 </BrowserRouter>
-              </TooltipProvider>
-            </ActivityProvider>
+                  </TooltipProvider>
+                </MultiUserProvider>
+              </ActivityProvider>
+            </ThemeProvider>
           </AuthProvider>
       </QueryClientProvider>
     </DataProtection>

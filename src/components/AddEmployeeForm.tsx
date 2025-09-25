@@ -55,10 +55,10 @@ export default function AddEmployeeForm({ onEmployeeAdded, onClose }: AddEmploye
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!formData.full_name.trim() || !formData.email.trim()) {
+    if (!formData.full_name.trim()) {
       toast({
         title: "Champs requis",
-        description: "Le nom et l'email sont obligatoires",
+        description: "Le nom complet est obligatoire",
         variant: "destructive"
       });
       return;
@@ -161,7 +161,7 @@ export default function AddEmployeeForm({ onEmployeeAdded, onClose }: AddEmploye
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="email">Email *</Label>
+              <Label htmlFor="email">Email (optionnel)</Label>
               <div className="relative">
                 <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                 <Input
@@ -171,7 +171,6 @@ export default function AddEmployeeForm({ onEmployeeAdded, onClose }: AddEmploye
                   value={formData.email}
                   onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
                   className="pl-10"
-                  required
                 />
               </div>
             </div>

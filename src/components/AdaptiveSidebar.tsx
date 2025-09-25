@@ -72,8 +72,19 @@ export default function AdaptiveSidebar() {
           </div>
         </div>
         
-        {/* Activity Selector */}
-        <ActivitySelector />
+        {/* Activity Info - Navigation entre activités désactivée */}
+        {currentActivity && (
+          <div className="p-3 bg-muted/50 rounded-lg">
+            <div className="flex items-center gap-2">
+              <span className="text-lg">{currentActivity.icon}</span>
+              <div className="flex-1">
+                <p className="text-sm font-medium text-foreground">{currentActivity.name}</p>
+                <p className="text-xs text-muted-foreground">Activité configurée</p>
+              </div>
+              <Badge variant="secondary" className="text-xs">Verrouillé</Badge>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Navigation */}

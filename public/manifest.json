@@ -98,6 +98,42 @@
           "sizes": "96x96"
         }
       ]
+    },
+    {
+      "name": "Graphiques Temps Réel",
+      "short_name": "Graphiques",
+      "description": "Analyses en temps réel",
+      "url": "/dashboard?view=charts",
+      "icons": [
+        {
+          "src": "/logo-ebo-gest.png",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "Alertes Intelligentes",
+      "short_name": "Alertes",
+      "description": "Notifications et alertes",
+      "url": "/dashboard?view=alerts",
+      "icons": [
+        {
+          "src": "/logo-ebo-gest.png",
+          "sizes": "96x96"
+        }
+      ]
     }
-  ]
+  ],
+  "protocol_handlers": [
+    {
+      "protocol": "web+ebogest",
+      "url": "/?action=%s"
+    }
+  ],
+  "edge_side_panel": {
+    "preferred_width": 400
+  },
+  "launch_handler": {
+    "client_mode": "navigate-existing"
+  }
 }
