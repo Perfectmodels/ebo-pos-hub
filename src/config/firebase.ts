@@ -39,14 +39,17 @@ export { analytics };
 // Configuration pour l'environnement de développement
 if (process.env.NODE_ENV === 'development' && typeof window !== 'undefined') {
   // Éviter la double connexion aux émulateurs
-  if (!auth._delegate._config?.emulator) {
-    try {
-      connectAuthEmulator(auth, 'http://localhost:9099');
-      connectFirestoreEmulator(db, 'localhost', 8080);
-      connectStorageEmulator(storage, 'localhost', 9199);
-    } catch (error) {
-      // Les émulateurs sont déjà connectés
-      console.log('Firebase emulators already connected');
-    }
+  let emulatorsConnected = false;
+  
+  try {
+    // Vérifier si les émulateurs sont déjà connectés en tentant de se connecter
+    connectAuthEmulator(auth, 'http://localhost:9099');
+    connectFirestoreEmulator(db, 'localhost', 8080);
+    connectStorageEmulator(storage, 'localhost', 9199);
+    emulatorsConnected = true;
+    console.log('Firebase emulators connected successfully');
+  } catch (error) {
+    // Les émulateurs sont déjà connectés ou il y a une erreur
+    console.log('Firebase emulators already connected or error:', error);
   }
 }

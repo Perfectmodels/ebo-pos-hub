@@ -163,6 +163,102 @@ export default function AdminPanelCMS() {
     setIsAuthenticated(false);
   };
 
+  // Fonction pour créer un utilisateur
+  const handleCreateUser = async () => {
+    if (!userForm.name || !userForm.email || !userForm.password) {
+      alert('Veuillez remplir tous les champs obligatoires');
+      return;
+    }
+
+    try {
+      setLoading(true);
+      
+      // Simuler la création d'utilisateur (remplacer par l'API Firebase)
+      const newUser: User = {
+        id: Date.now().toString(),
+        name: userForm.name,
+        email: userForm.email,
+        role: userForm.role || 'user',
+        status: 'active',
+        joinDate: new Date().toISOString(),
+        lastActive: new Date().toISOString(),
+        company: userForm.company || '',
+        permissions: ['basic']
+      };
+
+      setUsers(prev => [...prev, newUser]);
+      setStats(prev => ({ ...prev, totalUsers: prev.totalUsers + 1, newRegistrations: prev.newRegistrations + 1 }));
+      
+      // Réinitialiser le formulaire
+      setUserForm({
+        name: '',
+        email: '',
+        password: '',
+        role: '',
+        duration: '',
+        company: ''
+      });
+      
+      setShowCreateUser(false);
+      alert('Utilisateur créé avec succès !');
+      
+    } catch (error) {
+      console.error('Erreur lors de la création de l\'utilisateur:', error);
+      alert('Erreur lors de la création de l\'utilisateur');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Fonction pour créer une PME
+  const handleCreatePME = async () => {
+    if (!pmeForm.name || !pmeForm.contact || !pmeForm.email) {
+      alert('Veuillez remplir tous les champs obligatoires');
+      return;
+    }
+
+    try {
+      setLoading(true);
+      
+      // Simuler la création de PME (remplacer par l'API Firebase)
+      const newPME: PME = {
+        id: Date.now().toString(),
+        name: pmeForm.name,
+        contact: pmeForm.contact,
+        email: pmeForm.email,
+        phone: pmeForm.phone,
+        city: pmeForm.city,
+        activity: pmeForm.activity,
+        status: 'active',
+        joinDate: new Date().toISOString(),
+        revenue: 0,
+        employees: 0
+      };
+
+      setPMEs(prev => [...prev, newPME]);
+      setStats(prev => ({ ...prev, totalPMEs: prev.totalPMEs + 1 }));
+      
+      // Réinitialiser le formulaire
+      setPMEForm({
+        name: '',
+        contact: '',
+        email: '',
+        phone: '',
+        city: '',
+        activity: ''
+      });
+      
+      setShowCreatePME(false);
+      alert('PME créée avec succès !');
+      
+    } catch (error) {
+      console.error('Erreur lors de la création de la PME:', error);
+      alert('Erreur lors de la création de la PME');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // Données vides - aucune donnée de test
   const [stats, setStats] = useState<AdminStats>({
     totalUsers: 0,
@@ -181,6 +277,25 @@ export default function AdminPanelCMS() {
   const [pmes, setPMEs] = useState<PME[]>([]);
   const [supportMessages, setSupportMessages] = useState<SupportMessage[]>([]);
   const [pageContents, setPageContents] = useState<PageContent[]>([]);
+
+  // États pour les formulaires
+  const [userForm, setUserForm] = useState({
+    name: '',
+    email: '',
+    password: '',
+    role: '',
+    duration: '',
+    company: ''
+  });
+
+  const [pmeForm, setPMEForm] = useState({
+    name: '',
+    contact: '',
+    email: '',
+    phone: '',
+    city: '',
+    activity: ''
+  });
 
   // Afficher l'authentification si pas connecté
   if (!isAuthenticated) {
@@ -676,17 +791,38 @@ export default function AdminPanelCMS() {
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="user-name">Nom complet</Label>
-                <Input id="user-name" placeholder="Jean Dupont" />
+                <Input 
+                  id="user-name" 
+                  placeholder="Jean Dupont" 
+                  value={userForm.name}
+                  onChange={(e) => setUserForm(prev => ({ ...prev, name: e.target.value }))}
+                />
               </div>
               <div>
                 <Label htmlFor="user-email">Email</Label>
-                <Input id="user-email" type="email" placeholder="jean@example.com" />
+                <Input 
+                  id="user-email" 
+                  type="email" 
+                  placeholder="jean@example.com" 
+                  value={userForm.email}
+                  onChange={(e) => setUserForm(prev => ({ ...prev, email: e.target.value }))}
+                />
               </div>
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
+                <Label htmlFor="user-password">Mot de passe</Label>
+                <Input 
+                  id="user-password" 
+                  type="password" 
+                  placeholder="Mot de passe" 
+                  value={userForm.password}
+                  onChange={(e) => setUserForm(prev => ({ ...prev, password: e.target.value }))}
+                />
+              </div>
+              <div>
                 <Label htmlFor="user-role">Rôle</Label>
-                <Select>
+                <Select value={userForm.role} onValueChange={(value) => setUserForm(prev => ({ ...prev, role: value }))}>
                   <SelectTrigger>
                     <SelectValue placeholder="Sélectionner un rôle" />
                   </SelectTrigger>
@@ -697,23 +833,36 @@ export default function AdminPanelCMS() {
                   </SelectContent>
                 </Select>
               </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="user-duration">Durée d'accès (jours)</Label>
-                <Input id="user-duration" type="number" placeholder="30" />
+                <Input 
+                  id="user-duration" 
+                  type="number" 
+                  placeholder="30" 
+                  value={userForm.duration}
+                  onChange={(e) => setUserForm(prev => ({ ...prev, duration: e.target.value }))}
+                />
               </div>
-            </div>
-            <div>
-              <Label htmlFor="user-company">Entreprise</Label>
-              <Input id="user-company" placeholder="Nom de l'entreprise" />
+              <div>
+                <Label htmlFor="user-company">Entreprise</Label>
+                <Input 
+                  id="user-company" 
+                  placeholder="Nom de l'entreprise" 
+                  value={userForm.company}
+                  onChange={(e) => setUserForm(prev => ({ ...prev, company: e.target.value }))}
+                />
+              </div>
             </div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowCreateUser(false)}>
               Annuler
             </Button>
-            <Button className="btn-gradient">
+            <Button className="btn-gradient" onClick={handleCreateUser} disabled={loading}>
               <UserPlus className="w-4 h-4 mr-2" />
-              Créer l'utilisateur
+              {loading ? 'Création...' : 'Créer l\'utilisateur'}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -732,31 +881,57 @@ export default function AdminPanelCMS() {
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="pme-name">Nom de l'entreprise</Label>
-                <Input id="pme-name" placeholder="Restaurant Le Bon Goût" />
+                <Input 
+                  id="pme-name" 
+                  placeholder="Restaurant Le Bon Goût" 
+                  value={pmeForm.name}
+                  onChange={(e) => setPMEForm(prev => ({ ...prev, name: e.target.value }))}
+                />
               </div>
               <div>
                 <Label htmlFor="pme-contact">Contact principal</Label>
-                <Input id="pme-contact" placeholder="Jean Dupont" />
+                <Input 
+                  id="pme-contact" 
+                  placeholder="Jean Dupont" 
+                  value={pmeForm.contact}
+                  onChange={(e) => setPMEForm(prev => ({ ...prev, contact: e.target.value }))}
+                />
               </div>
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="pme-email">Email</Label>
-                <Input id="pme-email" type="email" placeholder="contact@restaurant.com" />
+                <Input 
+                  id="pme-email" 
+                  type="email" 
+                  placeholder="contact@restaurant.com" 
+                  value={pmeForm.email}
+                  onChange={(e) => setPMEForm(prev => ({ ...prev, email: e.target.value }))}
+                />
               </div>
               <div>
                 <Label htmlFor="pme-phone">Téléphone</Label>
-                <Input id="pme-phone" placeholder="+237 6 12 34 56 78" />
+                <Input 
+                  id="pme-phone" 
+                  placeholder="+237 6 12 34 56 78" 
+                  value={pmeForm.phone}
+                  onChange={(e) => setPMEForm(prev => ({ ...prev, phone: e.target.value }))}
+                />
               </div>
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="pme-city">Ville</Label>
-                <Input id="pme-city" placeholder="Yaoundé" />
+                <Input 
+                  id="pme-city" 
+                  placeholder="Yaoundé" 
+                  value={pmeForm.city}
+                  onChange={(e) => setPMEForm(prev => ({ ...prev, city: e.target.value }))}
+                />
               </div>
               <div>
                 <Label htmlFor="pme-activity">Type d'activité</Label>
-                <Select>
+                <Select value={pmeForm.activity} onValueChange={(value) => setPMEForm(prev => ({ ...prev, activity: value }))}>
                   <SelectTrigger>
                     <SelectValue placeholder="Sélectionner" />
                   </SelectTrigger>
@@ -765,6 +940,10 @@ export default function AdminPanelCMS() {
                     <SelectItem value="snack">Snack</SelectItem>
                     <SelectItem value="bar">Bar</SelectItem>
                     <SelectItem value="epicerie">Épicerie</SelectItem>
+                    <SelectItem value="cafe">Café</SelectItem>
+                    <SelectItem value="boulangerie">Boulangerie</SelectItem>
+                    <SelectItem value="traiteur">Traiteur</SelectItem>
+                    <SelectItem value="loisirs">Loisirs</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -774,9 +953,9 @@ export default function AdminPanelCMS() {
             <Button variant="outline" onClick={() => setShowCreatePME(false)}>
               Annuler
             </Button>
-            <Button className="btn-gradient">
+            <Button className="btn-gradient" onClick={handleCreatePME} disabled={loading}>
               <Building className="w-4 h-4 mr-2" />
-              Ajouter la PME
+              {loading ? 'Création...' : 'Ajouter la PME'}
             </Button>
           </DialogFooter>
         </DialogContent>

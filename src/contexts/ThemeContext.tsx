@@ -232,18 +232,6 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
   const applyThemeToDOM = () => {
     const root = document.documentElement;
     
-    // Appliquer les couleurs
-    root.style.setProperty('--primary', currentTheme.colors.primary);
-    root.style.setProperty('--secondary', currentTheme.colors.secondary);
-    root.style.setProperty('--accent', currentTheme.colors.accent);
-    root.style.setProperty('--background', isDarkMode ? '#0f172a' : currentTheme.colors.background);
-    root.style.setProperty('--foreground', isDarkMode ? '#f8fafc' : currentTheme.colors.foreground);
-    root.style.setProperty('--muted', isDarkMode ? '#1e293b' : currentTheme.colors.muted);
-    root.style.setProperty('--border', isDarkMode ? '#334155' : currentTheme.colors.border);
-    root.style.setProperty('--success', currentTheme.colors.success);
-    root.style.setProperty('--warning', currentTheme.colors.warning);
-    root.style.setProperty('--error', currentTheme.colors.error);
-
     // Appliquer les polices
     root.style.setProperty('--font-primary', currentTheme.fonts.primary);
     root.style.setProperty('--font-secondary', currentTheme.fonts.secondary);
@@ -268,11 +256,32 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
     };
     root.style.setProperty('--box-shadow', shadowMap[currentTheme.shadows]);
 
-    // Mode sombre
+    // Mode sombre - utiliser les classes CSS définies
     if (isDarkMode) {
       document.documentElement.classList.add('dark');
     } else {
       document.documentElement.classList.remove('dark');
+    }
+
+    // Appliquer les couleurs spécifiques par activité via des classes CSS
+    const activityColorMap: Record<string, string> = {
+      'restaurant': 'restaurant-theme',
+      'bar': 'bar-theme', 
+      'cafe': 'cafe-theme',
+      'commerce': 'commerce-theme',
+      'epicerie': 'commerce-theme',
+      'snack': 'restaurant-theme'
+    };
+
+    // Supprimer toutes les classes de thème d'activité
+    Object.values(activityColorMap).forEach(themeClass => {
+      root.classList.remove(themeClass);
+    });
+
+    // Ajouter la classe de thème appropriée
+    const themeClass = activityColorMap[currentTheme.id];
+    if (themeClass) {
+      root.classList.add(themeClass);
     }
   };
 

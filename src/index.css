@@ -73,41 +73,64 @@ All colors MUST be HSL. Modern gradients and business colors.
   }
 
   .dark {
+    /* Core Background & Text */
     --background: 222.2 84% 4.9%;
     --foreground: 210 40% 98%;
 
+    /* Cards & Surfaces */
     --card: 222.2 84% 4.9%;
     --card-foreground: 210 40% 98%;
 
+    /* Popover & Overlays */
     --popover: 222.2 84% 4.9%;
     --popover-foreground: 210 40% 98%;
 
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
+    /* Primary Brand - Professional Blue (Dark Mode) */
+    --primary: 217 91% 60%;
+    --primary-foreground: 0 0% 100%;
+    --primary-light: 217 91% 70%;
+    --primary-dark: 217 91% 45%;
 
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
+    /* Secondary - Business Green (Dark Mode) */
+    --secondary: 142 71% 45%;
+    --secondary-foreground: 0 0% 100%;
 
+    /* Muted Elements */
     --muted: 217.2 32.6% 17.5%;
     --muted-foreground: 215 20.2% 65.1%;
 
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
+    /* Accent - Success Green (Dark Mode) */
+    --accent: 142 71% 45%;
+    --accent-foreground: 0 0% 100%;
 
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
+    /* Destructive - Professional Red (Dark Mode) */
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
 
+    /* Borders & Inputs */
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
+    --ring: 217 91% 60%;
+
+    /* Sidebar Colors (Dark Mode) */
     --sidebar-background: 240 5.9% 10%;
     --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
+    --sidebar-primary: 217 91% 60%;
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 240 3.7% 15.9%;
     --sidebar-accent-foreground: 240 4.8% 95.9%;
     --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --sidebar-ring: 217 91% 60%;
+
+    /* Business Gradients (Dark Mode) */
+    --gradient-primary: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--primary-light)) 100%);
+    --gradient-success: linear-gradient(135deg, hsl(var(--accent)) 0%, hsl(142 71% 55%) 100%);
+    --gradient-bg: linear-gradient(135deg, hsl(var(--background)) 0%, hsl(222.2 84% 6%) 100%);
+    
+    /* Business Shadows (Dark Mode) */
+    --shadow-soft: 0 2px 8px -2px hsl(220 13% 60% / 0.15);
+    --shadow-medium: 0 4px 16px -4px hsl(220 13% 60% / 0.20);
+    --shadow-primary: 0 4px 20px -4px hsl(var(--primary) / 0.30);
   }
 }
 
@@ -134,6 +157,27 @@ All colors MUST be HSL. Modern gradients and business colors.
   /* Business Buttons */
   .btn-gradient {
     @apply bg-gradient-to-r from-primary to-primary-light hover:from-primary-dark hover:to-primary text-primary-foreground;
+  }
+  
+  /* Activity-specific themes */
+  .restaurant-theme {
+    --primary: 142 76% 36%; /* Vert restaurant */
+    --accent: 142 76% 36%;
+  }
+  
+  .bar-theme {
+    --primary: 280 100% 70%; /* Violet bar */
+    --accent: 280 100% 70%;
+  }
+  
+  .cafe-theme {
+    --primary: 25 95% 53%; /* Orange café */
+    --accent: 25 95% 53%;
+  }
+  
+  .commerce-theme {
+    --primary: 217 91% 60%; /* Bleu commerce */
+    --accent: 217 91% 60%;
   }
   
   /* Animations */
