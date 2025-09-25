@@ -7,6 +7,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
 import { Eye, EyeOff, Mail, Lock, User, Building } from 'lucide-react';
+import { getErrorMessage } from '@/utils/errorHandler';
 
 interface SimplifiedAuthProps {
   type: 'signin' | 'signup';
@@ -49,15 +50,7 @@ export default function SimplifiedAuth({ type, onToggleType }: SimplifiedAuthPro
       }
 
       if (error) {
-        let errorMessage = "Une erreur s'est produite";
-        
-        if (error.message.includes('Invalid login credentials')) {
-          errorMessage = "Email ou mot de passe incorrect";
-        } else if (error.message.includes('User already registered')) {
-          errorMessage = "Cet email est déjà utilisé. Essayez de vous connecter.";
-        } else if (error.message.includes('Password should be at least')) {
-          errorMessage = "Le mot de passe doit contenir au moins 6 caractères";
-        }
+        const errorMessage = getErrorMessage(error);
         
         toast({
           title: "Erreur d'authentification",

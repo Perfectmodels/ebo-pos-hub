@@ -3,6 +3,7 @@ import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { getRedirectUrl, getCallbackUrl } from '@/config/supabase';
 import { getGoogleRedirectUrl, getGoogleScopes, getGoogleQueryParams } from '@/config/google';
+import { handleSupabaseError, logError, AppError } from '@/utils/errorHandler';
 
 interface AuthContextType {
   user: User | null;
@@ -69,39 +70,52 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const signUp = async (email: string, password: string) => {
-    // Log pour débogage
-    console.log('🔍 Inscription utilisateur:', {
-      email,
-      environment: process.env.NODE_ENV,
-      timestamp: new Date().toISOString()
-    });
-    
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        // Désactiver la confirmation par email
-        emailRedirectTo: undefined,
-        data: {
-          app_name: 'Ebo\'o Gest',
-          app_url: getRedirectUrl()
+    try {
+      // Log pour débogage
+      console.log('🔍 Inscription utilisateur:', {
+        email,
+        environment: process.env.NODE_ENV,
+        timestamp: new Date().toISOString()
+      });
+      
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          // Désactiver la confirmation par email
+          emailRedirectTo: undefined,
+          data: {
+            app_name: 'Ebo\'o Gest',
+            app_url: getRedirectUrl()
+          }
         }
+      });
+      
+      // Log des résultats
+      console.log('📧 Résultat inscription:', {
+        user: data.user ? {
+          id: data.user.id,
+          email: data.user.email,
+          email_confirmed: data.user.email_confirmed_at,
+          created_at: data.user.created_at
+        } : null,
+        session: data.session ? 'Session créée' : 'Aucune session',
+        error: error?.message || 'Aucune erreur'
+      });
+
+      if (error) {
+        const appError = handleSupabaseError(error);
+        logError(appError, 'signUp');
+        return { error: appError };
       }
-    });
-    
-    // Log des résultats
-    console.log('📧 Résultat inscription:', {
-      user: data.user ? {
-        id: data.user.id,
-        email: data.user.email,
-        email_confirmed: data.user.email_confirmed_at,
-        created_at: data.user.created_at
-      } : null,
-      session: data.session ? 'Session créée' : 'Aucune session',
-      error: error?.message || 'Aucune erreur'
-    });
-    
-    return { error };
+      
+      return { error: null };
+    } catch (err) {
+      console.error('❌ Exception signUp:', err);
+      const appError = new AppError('Erreur inattendue lors de l\'inscription', 'unknown', 'SIGNUP_EXCEPTION', err);
+      logError(appError, 'signUp');
+      return { error: appError };
+    }
   };
 
   const signInWithGoogle = async () => {
