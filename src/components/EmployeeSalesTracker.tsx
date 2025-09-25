@@ -10,6 +10,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useSales } from "@/hooks/useSales";
+import { useEmployees } from "@/hooks/useEmployees";
 import { 
   DollarSign, 
   TrendingUp, 
@@ -56,67 +58,44 @@ export default function EmployeeSalesTracker({
   const [selectedPeriod, setSelectedPeriod] = useState(period);
   const [loading, setLoading] = useState(false);
 
-  // Données simulées pour la démo
-  const mockSalesData: SalesData[] = [
-    {
-      employee_id: "1",
-      employee_name: "Jean Dupont",
-      date: "2024-01-15",
-      total_sales: 125000,
-      total_orders: 45,
-      average_order_value: 2778,
-      hourly_rate: 15625,
-      products_sold: 67,
-      top_products: [
-        { name: "Coca-Cola 33cl", quantity: 15, revenue: 7500 },
-        { name: "Pain de mie", quantity: 8, revenue: 3200 },
-        { name: "Café au lait", quantity: 12, revenue: 3600 }
-      ]
-    },
-    {
-      employee_id: "2",
-      employee_name: "Marie Nguema", 
-      date: "2024-01-15",
-      total_sales: 89000,
-      total_orders: 32,
-      average_order_value: 2781,
-      hourly_rate: 21190,
-      products_sold: 45,
-      top_products: [
-        { name: "Orangina 50cl", quantity: 10, revenue: 7500 },
-        { name: "Attiéké", quantity: 6, revenue: 9000 },
-        { name: "Eau minérale", quantity: 8, revenue: 4000 }
-      ]
-    },
-    {
-      employee_id: "3",
-      employee_name: "Paul Mballa",
-      date: "2024-01-15", 
-      total_sales: 0,
-      total_orders: 0,
-      average_order_value: 0,
-      hourly_rate: 0,
-      products_sold: 0,
-      top_products: []
-    },
-    {
-      employee_id: "4",
-      employee_name: "Sophie Mbeng",
-      date: "2024-01-15",
-      total_sales: 45000,
-      total_orders: 18,
-      average_order_value: 2500,
-      hourly_rate: 0,
-      products_sold: 23,
-      top_products: [
-        { name: "Fanta 33cl", quantity: 6, revenue: 3000 },
-        { name: "Pain", quantity: 4, revenue: 2000 }
-      ]
-    }
-  ];
+  // Utiliser les vraies données des ventes
+  const { sales: realSales } = useSales();
+  const { employees: realEmployees } = useEmployees();
 
   useEffect(() => {
-    setSalesData(mockSalesData);
+    if (realSales && realEmployees) {
+      // Calculer les données de ventes par employé
+      const salesByEmployee = realSales.reduce((acc, sale) => {
+        const employeeId = sale.employee_id || 'unknown';
+        if (!acc[employeeId]) {
+          const employee = realEmployees.find(emp => emp.id === employeeId);
+          acc[employeeId] = {
+            employee_id: employeeId,
+            employee_name: employee?.full_name || 'Employé inconnu',
+            date: sale.createdAt.toDate().toISOString().split('T')[0],
+            total_sales: 0,
+            total_orders: 0,
+            average_order_value: 0,
+            hourly_rate: 0,
+            products_sold: 0,
+            top_products: []
+          };
+        }
+        acc[employeeId].total_sales += sale.total;
+        acc[employeeId].total_orders += 1;
+        acc[employeeId].products_sold += sale.items.length;
+        return acc;
+      }, {} as Record<string, SalesData>);
+
+      // Calculer les moyennes et taux horaires
+      const salesDataArray = Object.values(salesByEmployee).map(data => ({
+        ...data,
+        average_order_value: data.total_orders > 0 ? Math.round(data.total_sales / data.total_orders) : 0,
+        hourly_rate: 0 // À calculer avec les heures travaillées
+      }));
+
+      setSalesData(salesDataArray);
+    }
   }, []);
 
   const getInitials = (name: string) => {

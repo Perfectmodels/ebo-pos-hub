@@ -22,6 +22,8 @@ import Stock from "./pages/Stock";
 import Personnel from "./pages/Personnel";
 import Rapports from "./pages/Rapports";
 import Parametres from "./pages/Parametres";
+import Produits from "./pages/Produits";
+import Clients from "./pages/Clients";
 import AdminPanel from "./pages/AdminPanelCMS";
 import AdminLogin from "./pages/AdminLogin";
 import Contact from "./pages/Contact";
@@ -96,14 +98,14 @@ const App = () => (
                     <Route path="/produits" element={
                       <ProtectedRoute>
                         <AppLayout>
-                          <div className="p-6"><h1 className="text-3xl font-bold">Produits & Services - En développement</h1></div>
+                          <Produits />
                         </AppLayout>
                       </ProtectedRoute>
                     } />
                     <Route path="/clients" element={
                       <ProtectedRoute>
                         <AppLayout>
-                          <div className="p-6"><h1 className="text-3xl font-bold">Gestion Clients - En développement</h1></div>
+                          <Clients />
                         </AppLayout>
                       </ProtectedRoute>
                     } />

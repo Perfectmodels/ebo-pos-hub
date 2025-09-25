@@ -4,6 +4,9 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
+import { useProducts } from "@/hooks/useProducts";
+import { useEmployees } from "@/hooks/useEmployees";
+import { useSales } from "@/hooks/useSales";
 import { 
   Bell, 
   Mail, 
@@ -34,80 +37,86 @@ export default function NotificationCenter() {
   const [filter, setFilter] = useState<'all' | 'unread' | 'new_user' | 'new_pme' | 'low_stock'>('all');
   const [loading, setLoading] = useState(false);
 
-  // Données simulées pour la démo
-  const mockNotifications: Notification[] = [
-    {
-      id: '1',
-      type: 'new_pme',
-      title: 'Nouvelle inscription PME',
-      message: 'Restaurant Le Bon Goût s\'est inscrit (Restaurant - Yaoundé)',
-      timestamp: '2024-01-15T10:30:00Z',
-      read: false,
-      priority: 'high',
-      data: {
-        companyName: 'Restaurant Le Bon Goût',
-        activityType: 'Restaurant',
-        city: 'Yaoundé'
-      }
-    },
-    {
-      id: '2',
-      type: 'new_user',
-      title: 'Nouvel utilisateur',
-      message: 'Jean Dupont s\'est inscrit comme Vendeur',
-      timestamp: '2024-01-15T09:15:00Z',
-      read: false,
-      priority: 'medium',
-      data: {
-        userName: 'Jean Dupont',
-        role: 'Vendeur'
-      }
-    },
-    {
-      id: '3',
-      type: 'low_stock',
-      title: 'Stock faible',
-      message: 'Coca-Cola 33cl - Stock: 5/10 unités',
-      timestamp: '2024-01-15T08:45:00Z',
-      read: true,
-      priority: 'high',
-      data: {
-        productName: 'Coca-Cola 33cl',
-        currentStock: 5,
-        minStock: 10
-      }
-    },
-    {
-      id: '4',
-      type: 'daily_report',
-      title: 'Rapport quotidien',
-      message: 'Ventes du jour: 125,000 FCFA (+12% vs hier)',
-      timestamp: '2024-01-14T18:00:00Z',
-      read: true,
-      priority: 'low',
-      data: {
-        totalSales: 125000,
-        growth: 12
-      }
-    },
-    {
-      id: '5',
-      type: 'system',
-      title: 'Mise à jour système',
-      message: 'Nouvelle version disponible avec fonctionnalités QR',
-      timestamp: '2024-01-14T16:30:00Z',
-      read: true,
-      priority: 'medium',
-      data: {
-        version: '2.1.0',
-        features: ['QR Scanner', 'Notifications Email']
-      }
-    }
-  ];
+  // Utiliser les vraies données pour générer les notifications
+  const { products } = useProducts();
+  const { employees } = useEmployees();
+  const { sales } = useSales();
 
   useEffect(() => {
-    setNotifications(mockNotifications);
-  }, []);
+    const generateNotifications = () => {
+      const newNotifications: Notification[] = [];
+
+      // Notifications de stock faible
+      const lowStockProducts = products.filter(p => p.current_stock <= p.min_stock);
+      lowStockProducts.forEach(product => {
+        newNotifications.push({
+          id: `low_stock_${product.id}`,
+          type: 'low_stock',
+          title: 'Stock faible',
+          message: `${product.name} - Stock: ${product.current_stock}/${product.min_stock} unités`,
+          timestamp: new Date().toISOString(),
+          read: false,
+          priority: 'high',
+          data: {
+            productName: product.name,
+            currentStock: product.current_stock,
+            minStock: product.min_stock
+          }
+        });
+      });
+
+      // Notifications de nouveaux employés
+      const recentEmployees = employees.filter(emp => {
+        // Les employés récents (dans les 24h)
+        const createdAt = new Date(emp.created_at || new Date().toISOString());
+        const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+        return createdAt > oneDayAgo;
+      });
+      recentEmployees.forEach(employee => {
+        newNotifications.push({
+          id: `new_employee_${employee.id}`,
+          type: 'new_user',
+          title: 'Nouvel employé',
+          message: `${employee.full_name} s'est inscrit comme ${employee.role}`,
+          timestamp: new Date().toISOString(),
+          read: false,
+          priority: 'medium',
+          data: {
+            userName: employee.full_name,
+            role: employee.role
+          }
+        });
+      });
+
+      // Notifications de ventes du jour
+      const todaySales = sales.filter(sale => {
+        const saleDate = sale.createdAt.toDate();
+        const today = new Date();
+        return saleDate.toDateString() === today.toDateString();
+      });
+      
+      if (todaySales.length > 0) {
+        const totalTodaySales = todaySales.reduce((sum, sale) => sum + sale.total, 0);
+        newNotifications.push({
+          id: 'daily_sales',
+          type: 'daily_report',
+          title: 'Rapport quotidien',
+          message: `Ventes du jour: ${totalTodaySales.toLocaleString()} FCFA`,
+          timestamp: new Date().toISOString(),
+          read: false,
+          priority: 'low',
+          data: {
+            totalSales: totalTodaySales,
+            orderCount: todaySales.length
+          }
+        });
+      }
+
+      setNotifications(newNotifications);
+    };
+
+    generateNotifications();
+  }, [products, employees, sales]);
 
   const getNotificationIcon = (type: string) => {
     switch (type) {

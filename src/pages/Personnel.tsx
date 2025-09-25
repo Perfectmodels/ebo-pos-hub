@@ -8,14 +8,17 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import AddEmployeeForm from "@/components/AddEmployeeForm";
 import EditEmployeeForm from "@/components/EditEmployeeForm"; 
-import TimeClock from "@/components/TimeClock"; 
+import TimeClock from "@/components/TimeClock";
+import EmployeeProfilesView from "@/components/EmployeeProfilesView"; 
 import { 
   Users, 
   Plus, 
   Edit,
   Trash2,
   Loader2,
-  Clock
+  Clock,
+  Shield,
+  Eye
 } from "lucide-react";
 
 export default function Personnel() {
@@ -25,7 +28,8 @@ export default function Personnel() {
   
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
-  const [showTimeClock, setShowTimeClock] = useState(false); 
+  const [showTimeClock, setShowTimeClock] = useState(false);
+  const [showProfiles, setShowProfiles] = useState(false);
   const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
 
   const handleEditClick = (employee: Employee) => {
@@ -46,6 +50,30 @@ export default function Personnel() {
 
   const getInitials = (name: string) => name ? name.charAt(0).toUpperCase() : '?';
 
+  // Afficher les profils d'employés si demandé
+  if (showProfiles) {
+    return (
+      <div className="p-6">
+        <div className="flex items-center justify-between mb-6">
+          <Button 
+            variant="outline" 
+            onClick={() => setShowProfiles(false)}
+            className="flex items-center gap-2"
+          >
+            <Eye className="w-4 h-4" />
+            Retour à la liste
+          </Button>
+        </div>
+        <EmployeeProfilesView 
+          onAddEmployee={() => {
+            setShowProfiles(false);
+            setShowAddModal(true);
+          }}
+        />
+      </div>
+    );
+  }
+
   return (
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
@@ -54,6 +82,10 @@ export default function Personnel() {
           <p className="text-muted-foreground mt-1">Ajoutez, modifiez et suivez les membres de votre équipe.</p>
         </div>
         <div className="flex gap-2">
+          <Button variant="outline" onClick={() => setShowProfiles(true)}>
+            <Shield className="w-4 h-4 mr-2" />
+            Profils
+          </Button>
           <Button variant="outline" onClick={() => setShowTimeClock(true)} disabled={!user}>
             <Clock className="w-4 h-4 mr-2" />
             Pointage
@@ -105,22 +137,12 @@ export default function Personnel() {
       )}
 
       {showAddModal && (
-        <div className="fixed inset-0 bg-black/60 flex items-center justify-center p-4 z-50">
-          <Card className="w-full max-w-2xl">
-            <CardHeader>
-              <CardTitle>Ajouter un employé</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {user && (
-                <AddEmployeeForm 
-                  addEmployee={addEmployee}
-                  onFinished={() => setShowAddModal(false)}
-                  businessId={user.uid}
-                />
-              )}
-            </CardContent>
-          </Card>
-        </div>
+        <AddEmployeeForm 
+          onEmployeeAdded={() => {
+            setShowAddModal(false);
+          }}
+          onClose={() => setShowAddModal(false)}
+        />
       )}
 
       {showEditModal && selectedEmployee && (
@@ -132,7 +154,9 @@ export default function Personnel() {
             <CardContent>
               <EditEmployeeForm 
                 employee={selectedEmployee}
-                updateEmployee={updateEmployee}
+                updateEmployee={async (id: string, updates: Partial<Employee>) => {
+                  await updateEmployee(id, updates);
+                }}
                 onFinished={() => {
                   setShowEditModal(false);
                   setSelectedEmployee(null);

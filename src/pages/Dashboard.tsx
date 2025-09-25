@@ -6,7 +6,9 @@ import { useSales, Sale } from "@/hooks/useSales";
 import { useProducts } from "@/hooks/useProducts";
 import { useEmployees } from "@/hooks/useEmployees";
 import { useAuth } from "@/contexts/AuthContext";
+import { useUserSetup } from "@/hooks/useUserSetup";
 import NewUserWelcome from "@/components/NewUserWelcome";
+import GoogleUserSetup from "@/components/GoogleUserSetup";
 import { DollarSign, ShoppingCart, Package, Users, TrendingUp, AlertTriangle, RefreshCw } from "lucide-react";
 import { AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { useNavigate } from 'react-router-dom';
@@ -48,6 +50,7 @@ export default function Dashboard() {
   const { sales, loading: salesLoading, fetchSales } = useSales();
   const { products, loading: productsLoading } = useProducts();
   const { employees, loading: employeesLoading } = useEmployees();
+  const { needsSetup, loading: setupLoading, markSetupComplete } = useUserSetup();
 
   const loading = salesLoading || productsLoading || employeesLoading;
 
@@ -72,6 +75,27 @@ export default function Dashboard() {
   const revenueGrowthData = useMemo(() => getRevenueGrowthData(sales), [sales]);
 
   // --- Conditional Rendering --- //
+  
+  // Afficher le setup Google si l'utilisateur a besoin de finaliser sa configuration
+  if (setupLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
+        <div className="text-center">
+          <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent mx-auto mb-4" />
+          <p className="text-muted-foreground">Vérification de votre profil...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (needsSetup) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
+        <GoogleUserSetup onComplete={markSetupComplete} />
+      </div>
+    );
+  }
+
   if (!loading && sales.length === 0 && products.length === 0) {
     return <NewUserWelcome onComplete={() => navigate('/products')} />;
   }
@@ -90,10 +114,10 @@ export default function Dashboard() {
 
       {/* Stats Cards */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <StatsCard title="Chiffre d'Affaires (Jour)" value={`${todayStats.revenue.toLocaleString()} FCFA`} icon={DollarSign} isLoading={loading} />
-        <StatsCard title="Commandes (Jour)" value={todayStats.orders} icon={ShoppingCart} isLoading={loading} />
-        <StatsCard title="Stock Faible" value={lowStockProducts.length} icon={AlertTriangle} changeType={lowStockProducts.length > 0 ? "negative" : "default"} isLoading={loading}/>
-        <StatsCard title="Personnel Actif" value={employees.length} icon={Users} isLoading={loading} />
+        <StatsCard title="Chiffre d'Affaires (Jour)" value={`${todayStats.revenue.toLocaleString()} FCFA`} icon={DollarSign} />
+        <StatsCard title="Commandes (Jour)" value={todayStats.orders} icon={ShoppingCart} />
+        <StatsCard title="Stock Faible" value={lowStockProducts.length} icon={AlertTriangle} changeType={lowStockProducts.length > 0 ? "negative" : "neutral"}/>
+        <StatsCard title="Personnel Actif" value={employees.length} icon={Users} />
       </div>
 
       {/* Quick Actions */}

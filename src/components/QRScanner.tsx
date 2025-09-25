@@ -13,6 +13,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
+import { useProducts } from "@/hooks/useProducts";
 import { 
   QrCode, 
   Camera, 
@@ -58,45 +59,14 @@ export default function QRScanner({
   const [productData, setProductData] = useState<ProductData | null>(null);
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
+  const { products } = useProducts();
   
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const streamRef = useRef<MediaStream | null>(null);
+  const scannerRef = useRef<any>(null);
+  const scannerElementRef = useRef<HTMLDivElement>(null);
 
-  // Simuler la détection de QR code (en production, utiliser une vraie librairie)
-  const simulateQRDetection = (code: string) => {
-    // Simulation de données produit basées sur le code
-    const mockProducts: Record<string, ProductData> = {
-      "1234567890123": {
-        code: "1234567890123",
-        name: "Coca Cola 33cl",
-        price: 500,
-        category: "Boissons",
-        description: "Boisson gazeuse"
-      },
-      "2345678901234": {
-        code: "2345678901234",
-        name: "Pain de Mie",
-        price: 400,
-        category: "Boulangerie",
-        description: "Pain de mie blanc"
-      },
-      "3456789012345": {
-        code: "3456789012345",
-        name: "Attiéké",
-        price: 1500,
-        category: "Plats",
-        description: "Attiéké traditionnel"
-      },
-      "4567890123456": {
-        code: "4567890123456",
-        name: "Café au Lait",
-        price: 300,
-        category: "Boissons",
-        description: "Café au lait chaud"
-      }
-    };
-
-    return mockProducts[code] || null;
+  // Rechercher un produit existant dans la base de données
+  const findProductByCode = (code: string) => {
+    return products.find(product => product.id === code || product.name.toLowerCase().includes(code.toLowerCase()));
   };
 
   const startScanning = async () => {
@@ -104,32 +74,43 @@ export default function QRScanner({
       setIsScanning(true);
       setLoading(true);
 
-      // Demander l'accès à la caméra
-      const stream = await navigator.mediaDevices.getUserMedia({ 
-        video: { 
-          facingMode: 'environment' // Caméra arrière pour mobile
-        } 
-      });
-      
-      streamRef.current = stream;
-      
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
-        videoRef.current.play();
+      // Charger la librairie html5-qrcode dynamiquement
+      const { Html5QrcodeScanner } = await import('html5-qrcode');
+
+      if (!scannerElementRef.current) return;
+
+      // Nettoyer le scanner précédent s'il existe
+      if (scannerRef.current) {
+        await scannerRef.current.clear();
       }
 
-      // Simuler la détection de QR code
-      setTimeout(() => {
-        // En production, utiliser une vraie librairie comme jsQR ou QuaggaJS
-        const mockCode = "1234567890123"; // Code simulé
-        handleQRDetected(mockCode);
-      }, 2000);
+      // Créer le scanner
+      scannerRef.current = new Html5QrcodeScanner(
+        scannerElementRef.current.id,
+        {
+          fps: 10,
+          qrbox: { width: 250, height: 250 },
+          formatsToSupport: []
+        },
+        false
+      );
+
+      // Démarrer le scan
+      scannerRef.current.render(
+        (decodedText: string) => {
+          handleQRDetected(decodedText);
+        },
+        (errorMessage: string) => {
+          // Erreur silencieuse pour éviter trop de logs
+          console.log('Scan error:', errorMessage);
+        }
+      );
 
     } catch (error) {
-      console.error('Erreur accès caméra:', error);
+      console.error('Erreur initialisation scanner:', error);
       toast({
-        title: "Erreur caméra",
-        description: "Impossible d'accéder à la caméra. Vérifiez les permissions.",
+        title: "Erreur scanner",
+        description: "Impossible d'initialiser le scanner QR. Vérifiez les permissions de la caméra.",
         variant: "destructive"
       });
     } finally {
@@ -137,37 +118,54 @@ export default function QRScanner({
     }
   };
 
-  const stopScanning = () => {
+  const stopScanning = async () => {
     setIsScanning(false);
-    if (streamRef.current) {
-      streamRef.current.getTracks().forEach(track => track.stop());
-      streamRef.current = null;
-    }
-    if (videoRef.current) {
-      videoRef.current.srcObject = null;
+    if (scannerRef.current) {
+      try {
+        await scannerRef.current.clear();
+      } catch (error) {
+        console.log('Erreur arrêt scanner:', error);
+      }
     }
   };
 
-  const handleQRDetected = (code: string) => {
+  const handleQRDetected = async (code: string) => {
     setScanResult(code);
-    stopScanning();
+    await stopScanning();
     
-    // Simuler la recherche du produit
-    const product = simulateQRDetection(code);
+    // Rechercher le produit dans la base de données
+    const existingProduct = findProductByCode(code);
     
-    if (product) {
-      setProductData(product);
-      onProductFound(product);
+    if (existingProduct) {
+      const productData = {
+        code: code,
+        name: existingProduct.name,
+        price: existingProduct.price,
+        category: existingProduct.category,
+        description: existingProduct.name
+      };
+      
+      setProductData(productData);
+      onProductFound(productData);
       toast({
         title: "Produit trouvé !",
-        description: `${product.name} détecté avec succès`,
+        description: `${productData.name} détecté avec succès`,
       });
     } else {
-      onProductNotFound(code);
+      // Si c'est un nouveau produit, créer les données de base
+      const newProductData = {
+        code: code,
+        name: `Produit ${code}`,
+        price: 0,
+        category: "Non classé",
+        description: "Nouveau produit détecté"
+      };
+      
+      setProductData(newProductData);
+      onProductFound(newProductData);
       toast({
-        title: "Produit non trouvé",
-        description: `Aucun produit trouvé pour le code: ${code}`,
-        variant: "destructive"
+        title: "Nouveau produit détecté",
+        description: `Code: ${code}. Veuillez compléter les informations.`,
       });
     }
   };
@@ -175,42 +173,49 @@ export default function QRScanner({
   const handleManualSearch = () => {
     if (!manualCode.trim()) return;
     
-    setLoading(true);
+    const existingProduct = findProductByCode(manualCode);
     
-    // Simuler la recherche
-    setTimeout(() => {
-      const product = simulateQRDetection(manualCode);
+    if (existingProduct) {
+      const productData = {
+        code: manualCode,
+        name: existingProduct.name,
+        price: existingProduct.price,
+        category: existingProduct.category,
+        description: existingProduct.name
+      };
       
-      if (product) {
-        setProductData(product);
-        onProductFound(product);
-        toast({
-          title: "Produit trouvé !",
-          description: `${product.name} trouvé avec succès`,
-        });
-      } else {
-        onProductNotFound(manualCode);
-        toast({
-          title: "Produit non trouvé",
-          description: `Aucun produit trouvé pour le code: ${manualCode}`,
-          variant: "destructive"
-        });
-      }
-      setLoading(false);
-    }, 1000);
-  };
-
-  const resetScanner = () => {
-    setScanResult(null);
-    setProductData(null);
-    setManualCode("");
-    stopScanning();
+      setProductData(productData);
+      onProductFound(productData);
+      toast({
+        title: "Produit trouvé !",
+        description: `${productData.name} trouvé manuellement`,
+      });
+    } else {
+      onProductNotFound(manualCode);
+      toast({
+        title: "Produit non trouvé",
+        description: `Aucun produit trouvé pour le code: ${manualCode}`,
+        variant: "destructive"
+      });
+    }
   };
 
   const handleClose = () => {
-    resetScanner();
+    stopScanning();
     setIsOpen(false);
+    setScanResult(null);
+    setProductData(null);
+    setManualCode("");
   };
+
+  // Nettoyer le scanner quand le composant se démonte
+  useEffect(() => {
+    return () => {
+      if (scannerRef.current) {
+        scannerRef.current.clear().catch(console.log);
+      }
+    };
+  }, []);
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
@@ -224,7 +229,7 @@ export default function QRScanner({
       <DialogContent className="max-w-2xl">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <QrCode className="w-5 h-5 text-primary" />
+            <QrCode className="w-5 h-5" />
             {title}
           </DialogTitle>
           <DialogDescription>
@@ -232,173 +237,118 @@ export default function QRScanner({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-6">
-          {/* Scanner Section */}
-          {!scanResult && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">Scanner de code QR</CardTitle>
-                <CardDescription>
-                  Positionnez le code QR dans le cadre pour le scanner
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {/* Video Preview */}
-                <div className="relative bg-black rounded-lg overflow-hidden">
-                  <video
-                    ref={videoRef}
-                    className="w-full h-64 object-cover"
-                    playsInline
-                    muted
-                  />
-                  {isScanning && (
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <div className="bg-black/50 rounded-lg p-4">
-                        <Loader2 className="w-8 h-8 animate-spin text-white" />
-                        <p className="text-white text-sm mt-2">Scan en cours...</p>
-                      </div>
-                    </div>
-                  )}
-                  {!isScanning && (
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <div className="text-center text-white">
-                        <Camera className="w-12 h-12 mx-auto mb-2 opacity-50" />
-                        <p className="text-sm">Caméra non active</p>
-                      </div>
-                    </div>
-                  )}
-                </div>
-
-                {/* Scanner Controls */}
-                <div className="flex gap-2">
-                  {!isScanning ? (
-                    <Button onClick={startScanning} className="flex-1">
-                      <Camera className="w-4 h-4 mr-2" />
-                      {loading ? "Démarrage..." : "Démarrer le scan"}
-                    </Button>
-                  ) : (
-                    <Button onClick={stopScanning} variant="outline" className="flex-1">
-                      <X className="w-4 h-4 mr-2" />
-                      Arrêter le scan
-                    </Button>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Manual Search */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Recherche manuelle</CardTitle>
-              <CardDescription>
-                Entrez manuellement le code du produit
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex gap-2">
-                <Input
-                  placeholder="Entrez le code produit..."
-                  value={manualCode}
-                  onChange={(e) => setManualCode(e.target.value)}
-                  onKeyPress={(e) => e.key === 'Enter' && handleManualSearch()}
-                />
-                <Button 
-                  onClick={handleManualSearch}
-                  disabled={loading || !manualCode.trim()}
-                >
-                  {loading ? (
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                  ) : (
-                    <Search className="w-4 h-4" />
-                  )}
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Product Found */}
-          {productData && (
-            <Card className="border-green-200 bg-green-50">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-green-800">
-                  <CheckCircle className="w-5 h-5" />
-                  Produit trouvé !
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <Label className="text-sm font-medium">Nom du produit</Label>
-                    <p className="text-lg font-semibold">{productData.name}</p>
-                  </div>
-                  <div>
-                    <Label className="text-sm font-medium">Code</Label>
-                    <p className="text-sm font-mono bg-muted px-2 py-1 rounded">
-                      {productData.code}
-                    </p>
-                  </div>
-                  <div>
-                    <Label className="text-sm font-medium">Prix</Label>
-                    <p className="text-lg font-semibold text-primary">
-                      {productData.price.toLocaleString()} FCFA
-                    </p>
-                  </div>
-                  <div>
-                    <Label className="text-sm font-medium">Catégorie</Label>
-                    <Badge variant="secondary">{productData.category}</Badge>
-                  </div>
-                </div>
-                
-                {productData.description && (
-                  <div>
-                    <Label className="text-sm font-medium">Description</Label>
-                    <p className="text-sm text-muted-foreground">{productData.description}</p>
+        <div className="space-y-4">
+          {/* Scanner QR */}
+          {isScanning ? (
+            <div className="relative">
+              <div 
+                id="qr-scanner" 
+                ref={scannerElementRef}
+                className="w-full h-64 bg-black rounded-lg flex items-center justify-center"
+              >
+                {loading && (
+                  <div className="flex flex-col items-center gap-2 text-white">
+                    <Loader2 className="w-8 h-8 animate-spin" />
+                    <p>Initialisation du scanner...</p>
                   </div>
                 )}
-
-                <div className="flex gap-2 pt-4">
-                  <Button onClick={handleClose} className="flex-1">
-                    <CheckCircle className="w-4 h-4 mr-2" />
-                    Confirmer
-                  </Button>
-                  <Button onClick={resetScanner} variant="outline">
-                    Scanner un autre
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Product Not Found */}
-          {scanResult && !productData && (
-            <Card className="border-orange-200 bg-orange-50">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-orange-800">
-                  <AlertCircle className="w-5 h-5" />
-                  Produit non trouvé
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <p className="text-sm">
-                  Aucun produit trouvé pour le code: <strong>{scanResult}</strong>
-                </p>
+              </div>
+              
+              <Button
+                onClick={stopScanning}
+                variant="destructive"
+                size="sm"
+                className="absolute top-2 right-2"
+              >
+                <X className="w-4 h-4" />
+              </Button>
+            </div>
+          ) : (
+            <div className="flex flex-col items-center gap-4 p-8 border-2 border-dashed border-muted-foreground/25 rounded-lg">
+              <Camera className="w-12 h-12 text-muted-foreground" />
+              <div className="text-center">
+                <p className="font-medium">Scanner QR Code</p>
                 <p className="text-sm text-muted-foreground">
-                  Voulez-vous ajouter ce produit à votre base de données ?
+                  Cliquez pour démarrer le scanner
                 </p>
-                
-                <div className="flex gap-2">
-                  <Button onClick={handleClose} variant="outline">
-                    Annuler
-                  </Button>
-                  <Button>
-                    <Plus className="w-4 h-4 mr-2" />
-                    Ajouter le produit
-                  </Button>
+              </div>
+              <Button onClick={startScanning} disabled={loading}>
+                {loading ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Démarrage...
+                  </>
+                ) : (
+                  <>
+                    <Camera className="w-4 h-4 mr-2" />
+                    Démarrer le scan
+                  </>
+                )}
+              </Button>
+            </div>
+          )}
+
+          {/* Recherche manuelle */}
+          <div className="space-y-2">
+            <Label htmlFor="manual-code">Ou saisissez le code manuellement</Label>
+            <div className="flex gap-2">
+              <Input
+                id="manual-code"
+                placeholder="Code produit ou nom..."
+                value={manualCode}
+                onChange={(e) => setManualCode(e.target.value)}
+                onKeyPress={(e) => e.key === 'Enter' && handleManualSearch()}
+              />
+              <Button onClick={handleManualSearch} variant="outline">
+                <Search className="w-4 h-4" />
+              </Button>
+            </div>
+          </div>
+
+          {/* Résultat du scan */}
+          {productData && (
+            <Card className="bg-green-50 border-green-200">
+              <CardContent className="p-4">
+                <div className="flex items-start gap-3">
+                  <CheckCircle className="w-5 h-5 text-green-600 mt-0.5" />
+                  <div className="flex-1">
+                    <h4 className="font-semibold text-green-900">Produit détecté</h4>
+                    <div className="space-y-1 mt-2 text-sm">
+                      <div className="flex items-center gap-2">
+                        <Package className="w-4 h-4 text-green-600" />
+                        <span className="font-medium">{productData.name}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Hash className="w-4 h-4 text-green-600" />
+                        <span className="text-muted-foreground">{productData.code}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <DollarSign className="w-4 h-4 text-green-600" />
+                        <span className="font-medium">{productData.price} FCFA</span>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </CardContent>
             </Card>
           )}
+
+          {/* Informations sur les codes supportés */}
+          <div className="text-xs text-muted-foreground bg-muted/50 p-3 rounded">
+            <p className="font-medium mb-1">Codes supportés :</p>
+            <ul className="space-y-1">
+              <li>• QR Code</li>
+              <li>• Code-barres EAN-13</li>
+              <li>• Code-barres Code-128</li>
+              <li>• Recherche par nom de produit</li>
+            </ul>
+          </div>
+        </div>
+
+        <div className="flex justify-end gap-2">
+          <Button variant="outline" onClick={handleClose}>
+            Fermer
+          </Button>
         </div>
       </DialogContent>
     </Dialog>

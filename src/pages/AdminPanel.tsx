@@ -46,7 +46,7 @@ export default function AdminPanel() {
     try {
       const userSnapshot = await getDocs(collection(db, "users"));
       setUsers(userSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as User)));
-      const pmeSnapshot = await getDocs(collection(db, "companies"));
+      const pmeSnapshot = await getDocs(collection(db, "businesses"));
       setPMEs(pmeSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as PME)));
     } catch (error) { console.error("Erreur de fetch:", error); }
     finally { setLoading(false); }
@@ -156,10 +156,10 @@ function TableauPME({ data, onAction }: { data: PME[], onAction: Function }) {
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild><Button variant="ghost" size="icon"><MoreHorizontal size={16}/></Button></DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
-                    {pme.status === 'pending' && <DropdownMenuItem onClick={() => onAction('companies', pme.id, 'updateStatus', 'active')}>Approuver</DropdownMenuItem>}
-                    {pme.status === 'active' && <DropdownMenuItem onClick={() => onAction('companies', pme.id, 'updateStatus', 'suspended')}>Suspendre</DropdownMenuItem>}
-                    {pme.status === 'suspended' && <DropdownMenuItem onClick={() => onAction('companies', pme.id, 'updateStatus', 'active')}>Réactiver</DropdownMenuItem>}
-                    <DropdownMenuItem className="text-red-600" onClick={() => onAction('companies', pme.id, 'delete')}>Supprimer</DropdownMenuItem>
+                    {pme.status === 'pending' && <DropdownMenuItem onClick={() => onAction('businesses', pme.id, 'updateStatus', 'active')}>Approuver</DropdownMenuItem>}
+                    {pme.status === 'active' && <DropdownMenuItem onClick={() => onAction('businesses', pme.id, 'updateStatus', 'suspended')}>Suspendre</DropdownMenuItem>}
+                    {pme.status === 'suspended' && <DropdownMenuItem onClick={() => onAction('businesses', pme.id, 'updateStatus', 'active')}>Réactiver</DropdownMenuItem>}
+                    <DropdownMenuItem className="text-red-600" onClick={() => onAction('businesses', pme.id, 'delete')}>Supprimer</DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
               </TableCell>

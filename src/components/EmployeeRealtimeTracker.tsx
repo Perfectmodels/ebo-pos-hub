@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useEmployees } from "@/hooks/useEmployees";
 import { 
   Select,
   SelectContent,
@@ -63,69 +64,30 @@ export default function EmployeeRealtimeTracker({
   const [roleFilter, setRoleFilter] = useState<string>("all");
   const [loading, setLoading] = useState(false);
 
-  // Données simulées pour la démo
-  const mockEmployees: Employee[] = [
-    {
-      id: "1",
-      name: "Jean Dupont",
-      email: "jean.dupont@entreprise.com",
-      phone: "+237 6XX XXX XXX",
-      role: "Vendeur",
-      status: "active",
-      current_location: "Caisse 1",
-      last_activity: "2 min",
-      today_sales: 125000,
-      today_hours: 6.5,
-      is_clocked_in: true,
-      check_in_time: "08:00"
-    },
-    {
-      id: "2", 
-      name: "Marie Nguema",
-      email: "marie.nguema@entreprise.com",
-      phone: "+237 6XX XXX XXX",
-      role: "Caissier",
-      status: "on_break",
-      current_location: "Salle de pause",
-      last_activity: "5 min",
-      today_sales: 89000,
-      today_hours: 4.2,
-      is_clocked_in: true,
-      check_in_time: "09:30"
-    },
-    {
-      id: "3",
-      name: "Paul Mballa",
-      email: "paul.mballa@entreprise.com", 
-      phone: "+237 6XX XXX XXX",
-      role: "Gestionnaire",
-      status: "active",
-      current_location: "Bureau",
-      last_activity: "1 min",
-      today_sales: 0,
-      today_hours: 7.0,
-      is_clocked_in: true,
-      check_in_time: "08:15"
-    },
-    {
-      id: "4",
-      name: "Sophie Mbeng",
-      email: "sophie.mbeng@entreprise.com",
-      phone: "+237 6XX XXX XXX", 
-      role: "Vendeur",
-      status: "offline",
-      current_location: "Déconnecté",
-      last_activity: "2h",
-      today_sales: 45000,
-      today_hours: 0,
-      is_clocked_in: false
-    }
-  ];
+  // Utiliser les vraies données des employés
+  const { employees: realEmployees, loading: employeesLoading } = useEmployees();
 
   useEffect(() => {
-    setEmployees(mockEmployees);
-    setFilteredEmployees(mockEmployees);
-  }, []);
+    if (realEmployees && realEmployees.length > 0) {
+      // Transformer les données réelles pour inclure les informations de tracking
+      const transformedEmployees: Employee[] = realEmployees.map(emp => ({
+        id: emp.id,
+        name: emp.full_name,
+        email: emp.email,
+        phone: emp.phone || '',
+        role: emp.role,
+        status: 'active', // Tous les employés sont considérés comme actifs
+        current_location: 'En service',
+        last_activity: 'En ligne',
+        today_sales: 0, // À calculer depuis les ventes
+        today_hours: 0, // À calculer depuis les heures
+        is_clocked_in: true,
+        check_in_time: new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })
+      }));
+      setEmployees(transformedEmployees);
+    }
+    setFilteredEmployees(employees);
+  }, [realEmployees]);
 
   useEffect(() => {
     filterEmployees();

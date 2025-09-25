@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useAuth } from './AuthContext';
+import { businessTypeToActivityId } from '@/utils/activityMapper';
 
 export interface ActivityConfig {
   id: string;
@@ -218,10 +219,32 @@ export const ActivityProvider = ({ children }: { children: ReactNode }) => {
   // Charger l'activité depuis le profil utilisateur
   useEffect(() => {
     if (user) {
-      // Ici, vous récupéreriez l'activité depuis le profil utilisateur
-      // Pour l'instant, on utilise une valeur par défaut
-      const userActivity = localStorage.getItem('userActivity') || 'restaurant';
-      setActivity(getActivityConfig(userActivity));
+      // Récupérer l'activité depuis le profil utilisateur dans Firestore
+      const fetchUserActivity = async () => {
+        try {
+          const { doc, getDoc } = await import('firebase/firestore');
+          const { firestore } = await import('@/config/firebase');
+          
+          const userDoc = await getDoc(doc(firestore, 'businesses', user.uid));
+          if (userDoc.exists()) {
+            const userData = userDoc.data();
+            const businessType = userData.businessType || 'restaurant';
+            const activityId = businessTypeToActivityId(businessType);
+            setActivity(getActivityConfig(activityId));
+          } else {
+            // Fallback vers localStorage ou valeur par défaut
+            const userActivity = localStorage.getItem('userActivity') || 'restaurant';
+            setActivity(getActivityConfig(userActivity));
+          }
+        } catch (error) {
+          console.error('Erreur lors du chargement de l\'activité:', error);
+          // Fallback vers localStorage ou valeur par défaut
+          const userActivity = localStorage.getItem('userActivity') || 'restaurant';
+          setActivity(getActivityConfig(userActivity));
+        }
+      };
+      
+      fetchUserActivity();
     }
   }, [user]);
 

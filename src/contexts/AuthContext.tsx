@@ -10,7 +10,7 @@ import {
   sendPasswordResetEmail,
   User
 } from 'firebase/auth';
-import { doc, setDoc } from 'firebase/firestore'; // Import firestore functions
+import { doc, setDoc, getDoc } from 'firebase/firestore'; // Import firestore functions
 import { auth, firestore } from '@/config/firebase';
 
 interface BusinessData {
@@ -65,13 +65,30 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
 
-      // Save business data to Firestore
-      await setDoc(doc(firestore, "businesses", user.uid), {
+      // Créer le profil business dans Firestore
+      const businessProfile = {
         ownerId: user.uid,
         email: user.email,
         ...businessData,
         createdAt: new Date().toISOString(),
-      });
+        status: 'active',
+        isGoogleUser: false
+      };
+
+      await setDoc(doc(firestore, "businesses", user.uid), businessProfile);
+
+      // Créer aussi un profil utilisateur séparé
+      const userProfile = {
+        uid: user.uid,
+        email: user.email,
+        businessId: user.uid,
+        role: 'owner',
+        createdAt: new Date().toISOString(),
+        lastLogin: new Date().toISOString(),
+        status: 'active'
+      };
+
+      await setDoc(doc(firestore, "users", user.uid), userProfile);
 
       return { error: null };
     } catch (error) {
@@ -83,12 +100,29 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
      try {
       const provider = new GoogleAuthProvider();
       const result = await signInWithPopup(auth, provider);
+      const user = result.user;
       
-      // This is a simple way to check if it's a new user.
-      // A more robust method would involve checking if a document for this user exists in Firestore.
+      // Vérifier si c'est un nouvel utilisateur
       const isNewUser = result.user.metadata.creationTime === result.user.metadata.lastSignInTime;
       
-      return { error: null, isNewUser };
+      // Si c'est un nouvel utilisateur, créer un profil business par défaut
+      if (isNewUser) {
+        const defaultBusinessData = {
+          businessName: user.displayName || "Mon Entreprise",
+          businessType: "autre",
+          currency: "XAF",
+          email: user.email,
+          ownerId: user.uid,
+          createdAt: new Date().toISOString(),
+          isGoogleUser: true
+        };
+        
+        await setDoc(doc(firestore, "businesses", user.uid), defaultBusinessData);
+        
+        return { error: null, isNewUser: true, needsSetup: true };
+      }
+      
+      return { error: null, isNewUser: false };
     } catch (error) {
       return { error };
     }

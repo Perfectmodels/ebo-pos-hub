@@ -3,7 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
+import { Textarea } from "@/components/ui/textarea";
 import { 
   Dialog,
   DialogContent,
@@ -13,42 +13,32 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
-import { useEmployees } from "@/hooks/useEmployees";
-import { useActivity } from "@/contexts/ActivityContext";
-import { getActivityRoles, getDefaultRole } from "@/utils/employeeProfiles";
+import { useClients } from "@/hooks/useClients";
 import { 
   Plus, 
   User, 
   Mail, 
   Phone, 
-  Key,
-  Shield,
-  Loader2,
-  Users
+  MapPin,
+  Loader2
 } from "lucide-react";
 
-interface AddEmployeeFormProps {
-  onEmployeeAdded?: () => void;
+interface AddClientFormProps {
+  onClientAdded?: () => void;
   onClose?: () => void;
 }
 
-export default function AddEmployeeForm({ onEmployeeAdded, onClose }: AddEmployeeFormProps) {
+export default function AddClientForm({ onClientAdded, onClose }: AddClientFormProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
-  const { addEmployee } = useEmployees();
-  const { currentActivity } = useActivity();
-
-  // Obtenir les rôles spécifiques à l'activité
-  const activityRoles = getActivityRoles(currentActivity?.id || 'restaurant');
-  const defaultRole = getDefaultRole(currentActivity?.id || 'restaurant');
+  const { addClient } = useClients();
 
   const [formData, setFormData] = useState({
     full_name: '',
     email: '',
     phone: '',
-    role: defaultRole.id,
-    pin_code: '',
+    address: '',
     status: 'active' as const
   });
 
@@ -64,23 +54,14 @@ export default function AddEmployeeForm({ onEmployeeAdded, onClose }: AddEmploye
       return;
     }
 
-    if (!formData.pin_code || formData.pin_code.length !== 4) {
-      toast({
-        title: "Code PIN requis",
-        description: "Le code PIN doit contenir exactement 4 chiffres",
-        variant: "destructive"
-      });
-      return;
-    }
-
     setLoading(true);
     try {
-      const result = await addEmployee(formData);
+      const result = await addClient(formData);
       
       if (result.success) {
         toast({
-          title: "Employé ajouté",
-          description: `${formData.full_name} a été ajouté avec le rôle ${activityRoles.find(r => r.id === formData.role)?.name}`,
+          title: "Client ajouté",
+          description: "Le client a été ajouté avec succès",
         });
         
         // Reset form
@@ -88,18 +69,17 @@ export default function AddEmployeeForm({ onEmployeeAdded, onClose }: AddEmploye
           full_name: '',
           email: '',
           phone: '',
-          role: defaultRole.id,
-          pin_code: '',
+          address: '',
           status: 'active'
         });
         
         setIsOpen(false);
-        onEmployeeAdded?.();
+        onClientAdded?.();
         onClose?.();
       } else {
         toast({
           title: "Erreur",
-          description: result.error || "Impossible d'ajouter l'employé",
+          description: result.error || "Impossible d'ajouter le client",
           variant: "destructive"
         });
       }
@@ -119,30 +99,27 @@ export default function AddEmployeeForm({ onEmployeeAdded, onClose }: AddEmploye
     onClose?.();
   };
 
-  const selectedRole = activityRoles.find(role => role.id === formData.role);
-
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
         <Button className="btn-gradient">
           <Plus className="w-4 h-4 mr-2" />
-          Ajouter un employé
+          Nouveau client
         </Button>
       </DialogTrigger>
       
       <DialogContent className="max-w-2xl">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <Users className="w-5 h-5" />
-            Nouvel employé - {currentActivity?.name}
+            <User className="w-5 h-5" />
+            Nouveau client
           </DialogTitle>
           <DialogDescription>
-            Ajoutez un nouvel employé avec un rôle adapté à votre activité
+            Ajoutez un nouveau client à votre base de données
           </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Informations personnelles */}
           <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-2">
               <Label htmlFor="full_name">Nom complet *</Label>
@@ -151,7 +128,7 @@ export default function AddEmployeeForm({ onEmployeeAdded, onClose }: AddEmploye
                 <Input
                   id="full_name"
                   type="text"
-                  placeholder="Nom complet de l'employé"
+                  placeholder="Nom complet du client"
                   value={formData.full_name}
                   onChange={(e) => setFormData(prev => ({ ...prev, full_name: e.target.value }))}
                   className="pl-10"
@@ -167,7 +144,7 @@ export default function AddEmployeeForm({ onEmployeeAdded, onClose }: AddEmploye
                 <Input
                   id="email"
                   type="email"
-                  placeholder="employe@email.com"
+                  placeholder="client@email.com"
                   value={formData.email}
                   onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
                   className="pl-10"
@@ -194,65 +171,32 @@ export default function AddEmployeeForm({ onEmployeeAdded, onClose }: AddEmploye
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="pin_code">Code PIN *</Label>
-              <div className="relative">
-                <Key className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                <Input
-                  id="pin_code"
-                  type="password"
-                  placeholder="1234"
-                  value={formData.pin_code}
-                  onChange={(e) => setFormData(prev => ({ ...prev, pin_code: e.target.value }))}
-                  className="pl-10"
-                  maxLength={4}
-                  required
-                />
-              </div>
+              <Label htmlFor="status">Statut</Label>
+              <select
+                id="status"
+                value={formData.status}
+                onChange={(e) => setFormData(prev => ({ ...prev, status: e.target.value as 'active' | 'inactive' }))}
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                <option value="active">Actif</option>
+                <option value="inactive">Inactif</option>
+              </select>
             </div>
           </div>
 
-          {/* Sélection du rôle */}
           <div className="space-y-2">
-            <Label htmlFor="role">Rôle *</Label>
-            <select
-              id="role"
-              value={formData.role}
-              onChange={(e) => setFormData(prev => ({ ...prev, role: e.target.value }))}
-              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-              required
-            >
-              {activityRoles.map((role) => (
-                <option key={role.id} value={role.id}>
-                  {role.icon} {role.name}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {/* Description du rôle sélectionné */}
-          {selectedRole && (
-            <div className="p-4 bg-muted/50 rounded-lg">
-              <div className="flex items-center gap-2 mb-2">
-                <span className="text-2xl">{selectedRole.icon}</span>
-                <Badge className={selectedRole.color}>
-                  {selectedRole.name}
-                </Badge>
-              </div>
-              <p className="text-sm text-muted-foreground mb-3">
-                {selectedRole.description}
-              </p>
-              <div className="space-y-1">
-                <p className="text-xs font-medium text-muted-foreground">Permissions :</p>
-                <div className="flex flex-wrap gap-1">
-                  {selectedRole.permissions.map((permission, index) => (
-                    <Badge key={index} variant="outline" className="text-xs">
-                      {permission.replace(/_/g, ' ')}
-                    </Badge>
-                  ))}
-                </div>
-              </div>
+            <Label htmlFor="address">Adresse</Label>
+            <div className="relative">
+              <MapPin className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+              <Textarea
+                id="address"
+                placeholder="Adresse complète du client"
+                value={formData.address}
+                onChange={(e) => setFormData(prev => ({ ...prev, address: e.target.value }))}
+                className="pl-10 min-h-[80px]"
+              />
             </div>
-          )}
+          </div>
 
           <div className="flex justify-end gap-2 pt-4">
             <Button type="button" variant="outline" onClick={handleClose}>
@@ -260,7 +204,7 @@ export default function AddEmployeeForm({ onEmployeeAdded, onClose }: AddEmploye
             </Button>
             <Button type="submit" disabled={loading} className="btn-gradient">
               {loading && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-              {loading ? "Ajout en cours..." : "Ajouter l'employé"}
+              {loading ? "Ajout en cours..." : "Ajouter le client"}
             </Button>
           </div>
         </form>

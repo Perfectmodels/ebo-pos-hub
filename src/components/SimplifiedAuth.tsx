@@ -17,6 +17,9 @@ interface SimplifiedAuthProps {
 export default function SimplifiedAuth({ type, onToggleType }: SimplifiedAuthProps) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [businessName, setBusinessName] = useState('');
+  const [businessType, setBusinessType] = useState('');
+  const [currency, setCurrency] = useState('XAF');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   
@@ -36,6 +39,16 @@ export default function SimplifiedAuth({ type, onToggleType }: SimplifiedAuthPro
       return;
     }
 
+    // Validation supplémentaire pour l'inscription
+    if (type === 'signup' && (!businessName || !businessType)) {
+      toast({
+        title: "Informations manquantes",
+        description: "Veuillez remplir le nom et le type d'entreprise",
+        variant: "destructive"
+      });
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -45,7 +58,12 @@ export default function SimplifiedAuth({ type, onToggleType }: SimplifiedAuthPro
         const result = await signIn(email, password);
         error = result.error;
       } else {
-        const result = await signUp(email, password);
+        const businessData = {
+          businessName: businessName.trim(),
+          businessType: businessType.trim(),
+          currency: currency
+        };
+        const result = await signUp(email, password, businessData);
         error = result.error;
       }
 
@@ -143,6 +161,63 @@ export default function SimplifiedAuth({ type, onToggleType }: SimplifiedAuthPro
               </Button>
             </div>
           </div>
+
+          {/* Champs supplémentaires pour l'inscription */}
+          {type === 'signup' && (
+            <>
+              <div className="space-y-2">
+                <Label htmlFor="businessName">Nom de l'entreprise</Label>
+                <div className="relative">
+                  <Building className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    id="businessName"
+                    type="text"
+                    placeholder="Nom de votre entreprise"
+                    value={businessName}
+                    onChange={(e) => setBusinessName(e.target.value)}
+                    className="pl-10"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="businessType">Type d'activité</Label>
+                <select
+                  id="businessType"
+                  value={businessType}
+                  onChange={(e) => setBusinessType(e.target.value)}
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                  required
+                >
+                  <option value="">Sélectionnez votre activité</option>
+                  <option value="restaurant">Restaurant</option>
+                  <option value="snack">Snack</option>
+                  <option value="bar">Bar</option>
+                  <option value="cafe">Café</option>
+                  <option value="commerce">Commerce</option>
+                  <option value="boutique">Boutique</option>
+                  <option value="pharmacie">Pharmacie</option>
+                  <option value="autre">Autre</option>
+                </select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="currency">Devise</Label>
+                <select
+                  id="currency"
+                  value={currency}
+                  onChange={(e) => setCurrency(e.target.value)}
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  <option value="XAF">Franc CFA (XAF)</option>
+                  <option value="EUR">Euro (EUR)</option>
+                  <option value="USD">Dollar US (USD)</option>
+                  <option value="CAD">Dollar Canadien (CAD)</option>
+                </select>
+              </div>
+            </>
+          )}
           
           <Button 
             type="submit" 
