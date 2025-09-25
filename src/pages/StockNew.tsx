@@ -7,6 +7,7 @@ import { useProducts } from "@/hooks/useProducts";
 import { useStockMovements } from "@/hooks/useStockMovements";
 import { useToast } from "@/hooks/use-toast";
 import { useActivity } from "@/contexts/ActivityContext";
+import { useAuth } from "@/contexts/AuthContext";
 import ProductManager from "@/components/ProductManager";
 import QRScanner from "@/components/QRScanner";
 import { 
@@ -25,19 +26,56 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 
 export default function StockNew() {
   const { products, loading: productsLoading, fetchProducts } = useProducts();
-  const { stockMovements, loading: movementsLoading, fetchStockMovements } = useStockMovements();
+  const { movements: stockMovements, loading: movementsLoading, fetchMovements } = useStockMovements();
   const { currentActivity } = useActivity();
+  const { user } = useAuth();
   const { toast } = useToast();
+
+  // Debug: Vérifier le chargement de l'activité et de l'utilisateur
+  useEffect(() => {
+    console.log('StockNew - user:', user);
+    console.log('StockNew - currentActivity:', currentActivity);
+    if (!user) {
+      console.warn('StockNew - Aucun utilisateur connecté');
+    }
+    if (!currentActivity) {
+      console.warn('StockNew - Aucune activité chargée');
+    }
+  }, [user, currentActivity]);
   
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
   const [showQRScanner, setShowQRScanner] = useState(false);
   const [activeTab, setActiveTab] = useState<'products' | 'movements' | 'analytics'>('products');
 
+  // Vérification de sécurité - afficher un état de chargement si pas d'utilisateur ou d'activité
+  if (!user || !currentActivity) {
+    return (
+      <div className="min-h-screen bg-gradient-bg p-6">
+        <div className="max-w-7xl mx-auto">
+          <div className="animate-pulse">
+            <div className="h-8 bg-muted rounded mb-4 w-1/3"></div>
+            <div className="h-4 bg-muted rounded mb-6 w-1/2"></div>
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-6">
+              {[1, 2, 3, 4].map((i) => (
+                <div key={i} className="h-32 bg-muted rounded"></div>
+              ))}
+            </div>
+            <div className="grid gap-4 md:grid-cols-2">
+              {[1, 2].map((i) => (
+                <div key={i} className="h-64 bg-muted rounded"></div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   // Rafraîchir les données
   const refreshData = () => {
     fetchProducts();
-    fetchStockMovements();
+    fetchMovements();
     toast({
       title: "Données actualisées",
       description: "Les informations de stock ont été mises à jour.",
@@ -55,7 +93,7 @@ export default function StockNew() {
     totalProducts: products.length,
     lowStock: lowStockProducts.length,
     outOfStock: outOfStockProducts.length,
-    totalValue: products.reduce((sum, p) => sum + (p.current_stock * p.purchase_price), 0)
+    totalValue: products.reduce((sum, p) => sum + (p.current_stock * p.price), 0)
   };
 
   // Mouvements récents

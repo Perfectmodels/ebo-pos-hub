@@ -30,7 +30,8 @@ import {
 
 interface QRScannerProps {
   onProductFound: (productData: any) => void;
-  onProductNotFound: (code: string) => void;
+  onProductNotFound?: (code: string) => void;
+  onClose?: () => void;
   mode?: 'add' | 'search' | 'sell';
   title?: string;
   description?: string;

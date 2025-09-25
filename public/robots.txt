@@ -1,19 +1,44 @@
+# Robots.txt pour Ebo'o Gest
+# https://ebo-gest.com
+
 User-agent: *
 Allow: /
 
-# Sitemap
-Sitemap: https://eboo-gest.vercel.app/sitemap.xml
+# Pages importantes à indexer
+Allow: /login
+Allow: /register
+Allow: /contact
+Allow: /guide
+Allow: /privacy
+Allow: /terms
 
-# Disallow admin panel for non-authenticated users
-Disallow: /admin
+# Pages protégées (nécessitent une authentification)
 Disallow: /dashboard
 Disallow: /ventes
 Disallow: /stock
 Disallow: /personnel
 Disallow: /rapports
 Disallow: /parametres
+Disallow: /admin
+Disallow: /reservations
+Disallow: /menu
+Disallow: /tables
+Disallow: /delivery
+Disallow: /suppliers
+Disallow: /production
+Disallow: /recipes
+Disallow: /events
+Disallow: /catering
+Disallow: /bookings
 
-# Allow public pages
-Allow: /
-Allow: /auth
-Allow: /inscription-pme
+# Fichiers à ne pas indexer
+Disallow: /api/
+Disallow: /sw.js
+Disallow: /manifest.json
+Disallow: /browserconfig.xml
+
+# Sitemap
+Sitemap: https://ebo-gest.com/sitemap.xml
+
+# Crawl-delay pour éviter la surcharge
+Crawl-delay: 1

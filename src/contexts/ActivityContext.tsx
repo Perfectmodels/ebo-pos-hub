@@ -225,13 +225,17 @@ export const ActivityProvider = ({ children }: { children: ReactNode }) => {
       // Récupérer l'activité depuis le profil utilisateur dans Firestore
       const fetchUserActivity = async () => {
         try {
+          console.log('ActivityContext - Chargement de l\'activité pour l\'utilisateur:', user.uid);
           const userDoc = await getDoc(doc(firestore, 'businesses', user.uid));
           if (userDoc.exists()) {
             const userData = userDoc.data();
+            console.log('ActivityContext - Données utilisateur trouvées:', userData);
             const businessType = userData.businessType || 'restaurant';
             const activityId = businessTypeToActivityId(businessType);
+            console.log('ActivityContext - Type d\'activité:', businessType, '-> ID:', activityId);
             setActivity(getActivityConfig(activityId));
           } else {
+            console.log('ActivityContext - Aucun profil business trouvé, utilisation du fallback');
             // Fallback vers localStorage ou valeur par défaut
             const userActivity = localStorage.getItem('userActivity') || 'restaurant';
             setActivity(getActivityConfig(userActivity));

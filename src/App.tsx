@@ -18,9 +18,9 @@ import AdaptiveDashboard from "./components/AdaptiveDashboard";
 import Home from "./pages/HomeNew";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
-import Dashboard from "./pages/Dashboard";
+import DashboardSimple from "./pages/DashboardSimple";
 import Ventes from "./pages/Ventes";
-import StockNew from "./pages/StockNew";
+import StockSimple from "./pages/StockSimple";
 import Personnel from "./pages/Personnel";
 import Rapports from "./pages/Rapports";
 import Parametres from "./pages/Parametres";
@@ -35,6 +35,7 @@ import TermsOfService from "./pages/TermsOfService";
 import NotFound from "./pages/NotFound";
 import ErrorBoundary from "./components/ErrorBoundary";
 import DataProtection from "./components/DataProtection";
+import DebugInfo from "./components/DebugInfo";
 
 const queryClient = new QueryClient();
 
@@ -56,6 +57,7 @@ const App = () => (
                 <Toaster />
                 <Sonner />
                 <PWAInstaller />
+                <DebugInfo />
                 <Routes>
                     {/* Public Routes */}
                     <Route path="/" element={<Home />} />
@@ -71,7 +73,7 @@ const App = () => (
                     <Route path="/dashboard" element={
                       <ProtectedRoute>
                         <AppLayout>
-                          <AdaptiveDashboard />
+                          <DashboardSimple />
                         </AppLayout>
                       </ProtectedRoute>
                     } />
@@ -85,14 +87,14 @@ const App = () => (
                     <Route path="/stock" element={
                       <ProtectedRoute>
                         <AppLayout>
-                          <StockNew />
+                          <StockSimple />
                         </AppLayout>
                       </ProtectedRoute>
                     } />
                     <Route path="/inventory" element={
                       <ProtectedRoute>
                         <AppLayout>
-                          <StockNew />
+                          <StockSimple />
                         </AppLayout>
                       </ProtectedRoute>
                     } />

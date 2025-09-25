@@ -86,15 +86,20 @@ export const usePermissions = () => {
   const { user } = useAuth();
 
   const hasPermission = (permissionId: string): boolean => {
-    if (!user) return false;
+    if (!user) {
+      console.log('PermissionGate - Aucun utilisateur connecté');
+      return false;
+    }
     
     // Le propriétaire (utilisateur connecté) a toujours tous les accès
     if (user.uid) {
+      console.log(`PermissionGate - Propriétaire connecté (${user.email}), accès accordé à: ${permissionId}`);
       return true;
     }
 
     // Pour les employés, vérifier leurs permissions basées sur leur rôle
     // Cette logique sera étendue quand on aura le système d'employés avec rôles
+    console.log('PermissionGate - Utilisateur non propriétaire, accès refusé à:', permissionId);
     return false;
   };
 

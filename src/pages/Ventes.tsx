@@ -99,7 +99,7 @@ export default function Ventes() {
     if (existingItem) {
       setCart(cart.map((item) => (item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item)));
     } else {
-      setCart([...cart, { id: product.id, name: product.name, price: product.selling_price, quantity: 1 }]);
+      setCart([...cart, { id: product.id, name: product.name, price: product.price, quantity: 1 }]);
     }
   };
 
@@ -134,8 +134,8 @@ export default function Ventes() {
       const saleData = {
         business_id: user.uid,
         employee_id: verifiedEmployee.id,
-        items: cart.map(({ id, name, price, quantity }) => ({ product_id: id, name, price, quantity })),
-        total_amount: getTotal(),
+        items: cart.map(({ id, name, price, quantity }) => ({ id, name, price, quantity })),
+        total: getTotal(),
         created_at: new Date().toISOString(),
       };
       
@@ -196,7 +196,7 @@ export default function Ventes() {
                   </span>
                 </div>
               </div>
-              <PinInput onVerified={handleEmployeeVerified} />
+              <PinInput onVerified={handleEmployeeVerified} businessId={user?.uid || ''} />
             </CardContent>
           </Card>
         </div>
@@ -236,7 +236,7 @@ export default function Ventes() {
                   <CardContent className="p-3 flex flex-col justify-between h-full">
                     <div>
                       <p className="font-semibold text-sm truncate">{product.name}</p>
-                      <p className="text-xs text-muted-foreground">{product.selling_price.toLocaleString('fr-FR')} FCFA</p>
+                      <p className="text-xs text-muted-foreground">{product.price.toLocaleString('fr-FR')} FCFA</p>
                     </div>
                     <Badge variant={product.current_stock > product.min_stock ? "secondary" : "destructive"} className="mt-2 text-xs self-start">
                       Stock: {product.current_stock}
