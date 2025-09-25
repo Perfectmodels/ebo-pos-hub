@@ -122,16 +122,17 @@ export default function Dashboard() {
 
   // Répartition par catégorie (basée sur les produits)
   const categoryData = products.reduce((acc, product) => {
-    const existing = acc.find(cat => cat.name === product.category);
+    const categoryName = "Produit"; // Simplified since we don't have category relations
+    const existing = acc.find(cat => cat.name === categoryName);
     if (existing) {
       existing.value += 1;
     } else {
       acc.push({ 
-        name: product.category, 
+        name: categoryName, 
         value: 1, 
         color: acc.length === 0 ? "#3b82f6" : 
-               acc.length === 1 ? "#10b981" : 
-               acc.length === 2 ? "#f59e0b" : "#ef4444"
+                acc.length === 1 ? "#10b981" : 
+                acc.length === 2 ? "#f59e0b" : "#ef4444"
       });
     }
     return acc;

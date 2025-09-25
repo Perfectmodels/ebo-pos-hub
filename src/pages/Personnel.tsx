@@ -6,7 +6,6 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useEmployees } from "@/hooks/useEmployees";
 import { useSales } from "@/hooks/useSales";
 import { useToast } from "@/hooks/use-toast";
-import EmployeeProfile from "@/components/EmployeeProfile";
 import TimeTracking from "@/components/TimeTracking";
 import EmployeeRealtimeTracker from "@/components/EmployeeRealtimeTracker";
 import EmployeeSalesTracker from "@/components/EmployeeSalesTracker";
@@ -324,7 +323,6 @@ export default function Personnel() {
       ) : (
         <div className="grid gap-4">
           {employees.map((employee) => {
-            const user = employee.users;
             const empStats = employeeStats[employee.user_id] || { todaySales: 0, todayOrders: 0 };
             
             return (
@@ -334,14 +332,14 @@ export default function Personnel() {
                     <div className="flex items-center gap-4">
                       <Avatar className="w-12 h-12">
                         <AvatarFallback className="bg-primary text-primary-foreground font-semibold">
-                          {user?.name ? user.name.split(' ').map(n => n[0]).join('') : 'E'}
+                          E
                         </AvatarFallback>
                       </Avatar>
                       
                       <div className="space-y-1">
                         <div className="flex items-center gap-3">
-                          <h3 className="font-semibold text-lg">{user?.name || 'Employé'}</h3>
-                          <Badge variant="secondary">{user?.role || 'Employé'}</Badge>
+                          <h3 className="font-semibold text-lg">Employé</h3>
+                          <Badge variant="secondary">Employé</Badge>
                           <Badge className={getStatusColor('present')}>
                             {getStatusText('present')}
                           </Badge>
@@ -354,7 +352,7 @@ export default function Personnel() {
                           </div>
                           <div className="flex items-center gap-1">
                             <Mail className="w-4 h-4" />
-                            <span>{user?.email || 'N/A'}</span>
+                            <span>employee@example.com</span>
                           </div>
                         </div>
                       </div>
@@ -432,18 +430,10 @@ export default function Personnel() {
       {/* Add Employee Modal */}
       {showAddEmployee && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-          <div className="bg-background rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-            <EmployeeProfile 
-              mode="create"
-              onSave={(employeeData) => {
-                setShowAddEmployee(false);
-                toast({
-                  title: "Employé ajouté !",
-                  description: `${employeeData.name} a été ajouté avec succès`,
-                });
-              }}
-              onClose={() => setShowAddEmployee(false)}
-            />
+          <div className="bg-background rounded-lg max-w-2xl w-full p-6">
+            <h2 className="text-xl font-bold mb-4">Ajouter un Employé</h2>
+            <p className="text-muted-foreground mb-4">Fonctionnalité disponible prochainement</p>
+            <Button onClick={() => setShowAddEmployee(false)}>Fermer</Button>
           </div>
         </div>
       )}

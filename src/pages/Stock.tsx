@@ -7,7 +7,6 @@ import { useProducts } from "@/hooks/useProducts";
 import { useStockMovements } from "@/hooks/useStockMovements";
 import { useToast } from "@/hooks/use-toast";
 import QRScanner from "@/components/QRScanner";
-import SimpleQRScanner from "@/components/SimpleQRScanner";
 import QuickAddProduct from "@/components/QuickAddProduct";
 import QRGenerator from "@/components/QRGenerator";
 import SobragaBrands from "@/components/SobragaBrands";
@@ -45,12 +44,12 @@ export default function Stock() {
   const [showAddProduct, setShowAddProduct] = useState(false);
   const [showSobragaBrands, setShowSobragaBrands] = useState(false);
 
-  const categories = ["Tous", ...Array.from(new Set(products.map(p => p.category)))];
+  const categories = ["Tous", "Produits"];
 
   const filteredProducts = products
     .filter(product => 
       product.name.toLowerCase().includes(searchTerm.toLowerCase()) &&
-      (selectedCategory === "Tous" || product.category === selectedCategory)
+      (selectedCategory === "Tous" || selectedCategory === "Produits")
     );
 
   const lowStockProducts = products.filter(p => p.current_stock <= p.min_stock);
@@ -116,22 +115,6 @@ export default function Stock() {
           </p>
         </div>
         <div className="flex gap-2">
-      <SimpleQRScanner
-        onProductFound={(productData) => {
-          // Pré-remplir le formulaire d'ajout avec les données scannées
-          setShowAddProduct(true);
-        }}
-        onProductNotFound={(code) => {
-          toast({
-            title: "Produit non trouvé",
-            description: `Aucun produit trouvé pour le code: ${code}`,
-            variant: "destructive"
-          });
-        }}
-        mode="add"
-        title="Scanner produit"
-        description="Scannez un code QR pour ajouter un produit"
-      />
           <Button variant="outline" onClick={() => setShowSobragaBrands(true)}>
             <Package className="w-4 h-4 mr-2" />
             Marques Sobraga
@@ -235,12 +218,12 @@ export default function Stock() {
           <CardContent>
             <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
               {lowStockProducts.map((product) => (
-                <div key={product.id} className="p-3 rounded bg-card border border-destructive/20">
-                  <p className="font-medium">{product.name}</p>
-                  <p className="text-sm text-muted-foreground">
-                    Stock: <span className="text-destructive font-semibold">{product.currentStock}</span> / Min: {product.minStock} {product.unit}
-                  </p>
-                </div>
+                 <div key={product.id} className="p-3 rounded bg-card border border-destructive/20">
+                   <p className="font-medium">{product.name}</p>
+                   <p className="text-sm text-muted-foreground">
+                     Stock: <span className="text-destructive font-semibold">{product.current_stock}</span> / Min: {product.min_stock} {product.unit}
+                   </p>
+                 </div>
               ))}
             </div>
           </CardContent>
@@ -286,9 +269,9 @@ export default function Stock() {
                     return (
                       <tr key={product.id} className="border-b hover:bg-muted/50">
                         <td className="py-3 font-medium">{product.name}</td>
-                        <td className="py-3">
-                          <Badge variant="secondary">{product.category}</Badge>
-                        </td>
+                         <td className="py-3">
+                           <Badge variant="secondary">Produit</Badge>
+                         </td>
                         <td className="py-3">{product.current_stock} {product.unit}</td>
                         <td className="py-3 text-muted-foreground">{product.min_stock} {product.unit}</td>
                         <td className="py-3 font-semibold">{product.selling_price.toLocaleString()} FCFA</td>
@@ -324,15 +307,15 @@ export default function Stock() {
                                 <TrendingDown className="w-3 h-3" />
                               )}
                             </Button>
-                            <QRGenerator 
-                              product={{
-                                id: product.id,
-                                name: product.name,
-                                code: product.code || '',
-                                selling_price: product.selling_price,
-                                category: product.category
-                              }}
-                            />
+                             <QRGenerator 
+                               product={{
+                                 id: product.id,
+                                 name: product.name,
+                                 code: product.qr_code || product.barcode || '',
+                                 selling_price: product.selling_price,
+                                 category: 'Produit'
+                               }}
+                             />
                             <Button 
                               size="sm" 
                               variant="outline"

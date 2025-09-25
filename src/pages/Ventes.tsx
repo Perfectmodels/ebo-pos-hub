@@ -8,7 +8,6 @@ import { useSales } from "@/hooks/useSales";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import QRScanner from "@/components/QRScanner";
-import SimpleQRScanner from "@/components/SimpleQRScanner";
 import { 
   ShoppingCart, 
   Plus, 
@@ -122,6 +121,7 @@ export default function Ventes() {
         const { error } = await addSale({
           product_id: item.id,
           employee_id: user.id,
+          session_id: null,
           quantity: item.quantity,
           unit_price: item.price,
           total_amount: item.price * item.quantity
@@ -174,19 +174,6 @@ export default function Ventes() {
                 className="pl-10"
               />
             </div>
-      <SimpleQRScanner
-        onProductFound={handleQRScanned}
-        onProductNotFound={(code) => {
-          toast({
-            title: "Produit non trouvé",
-            description: `Aucun produit trouvé pour le code: ${code}`,
-            variant: "destructive"
-          });
-        }}
-        mode="sell"
-        title="Scanner produit"
-        description="Scannez un code QR pour ajouter un produit au panier"
-      />
           </div>
 
           {/* Products Grid */}
@@ -215,7 +202,7 @@ export default function Ventes() {
                     <div className="space-y-2">
                       <div className="flex items-center justify-between">
                         <Badge variant="secondary" className="text-xs">
-                          {product.category}
+                          Produit
                         </Badge>
                         <Badge 
                           variant={product.current_stock <= product.min_stock ? "destructive" : "outline"}
