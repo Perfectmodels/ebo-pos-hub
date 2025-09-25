@@ -19,4 +19,5 @@ const app = initializeApp(firebaseConfig);
 
 // Exporter les services Firebase à utiliser dans l'application
 export const db = getFirestore(app);
+export const firestore = db; // Alias pour compatibilité
 export const auth = getAuth(app);
