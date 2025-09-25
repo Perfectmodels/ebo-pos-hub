@@ -62,6 +62,11 @@ self.addEventListener('fetch', (event) => {
   const { request } = event;
   const url = new URL(request.url);
   
+  // Ignorer les requêtes non-HTTP/HTTPS (chrome-extension, moz-extension, etc.)
+  if (!url.protocol.startsWith('http')) {
+    return;
+  }
+  
   // Stratégie Cache First pour les ressources statiques
   if (request.method === 'GET') {
     event.respondWith(
@@ -81,6 +86,9 @@ self.addEventListener('fetch', (event) => {
                 caches.open(DYNAMIC_CACHE)
                   .then((cache) => {
                     cache.put(request, responseClone);
+                  })
+                  .catch((error) => {
+                    console.warn('[SW] Erreur lors de la mise en cache:', error);
                   });
               }
               return networkResponse;

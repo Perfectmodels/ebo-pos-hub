@@ -1,1 +1,25 @@
+# Exclure les assets statiques de la redirection SPA
+/assets/*    /assets/:splat   200
+/*.js        /:splat.js      200
+/*.css       /:splat.css     200
+/*.png       /:splat.png     200
+/*.jpg       /:splat.jpg     200
+/*.jpeg      /:splat.jpeg    200
+/*.gif       /:splat.gif     200
+/*.svg       /:splat.svg     200
+/*.ico       /:splat.ico     200
+/*.woff      /:splat.woff    200
+/*.woff2     /:splat.woff2   200
+/*.ttf       /:splat.ttf     200
+/*.json      /:splat.json    200
+/*.xml       /:splat.xml     200
+/*.txt       /:splat.txt     200
+/*.pdf       /:splat.pdf     200
+/*.webp      /:splat.webp    200
+/*.avif      /:splat.avif    200
+/*.webm      /:splat.webm    200
+/*.mp4       /:splat.mp4     200
+/*.mp3       /:splat.mp3     200
+
+# SPA fallback - doit être en dernier
 /*    /index.html   200
