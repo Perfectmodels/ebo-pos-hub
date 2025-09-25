@@ -163,7 +163,7 @@ export default function EmployeeSalesTracker({
           </p>
         </div>
         <div className="flex gap-2">
-          <Select value={selectedPeriod} onValueChange={setSelectedPeriod}>
+          <Select value={selectedPeriod} onValueChange={(value: typeof selectedPeriod) => setSelectedPeriod(value)}>
             <SelectTrigger className="w-32">
               <SelectValue />
             </SelectTrigger>

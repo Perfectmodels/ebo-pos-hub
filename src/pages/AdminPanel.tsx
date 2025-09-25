@@ -783,7 +783,7 @@ export default function AdminPanel() {
       </div>
 
       {/* Contenu du panel */}
-      {renderAdminContent()}
+      <div>Admin content will be implemented here</div>
     </div>
   );
 }

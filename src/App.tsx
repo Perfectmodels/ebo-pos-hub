@@ -6,7 +6,6 @@ import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import PWAInstaller from "@/components/PWAInstaller";
-import PWANotifications from "@/components/PWANotifications";
 import "@/config/console"; // Configuration console
 import { AuthProvider } from "./contexts/AuthContext";
 import { ActivityProvider } from "./contexts/ActivityContext";
@@ -45,7 +44,6 @@ const App = () => (
               <Toaster />
               <Sonner />
               <PWAInstaller />
-              <PWANotifications />
               <BrowserRouter
                 future={{
                   v7_startTransition: true,

@@ -94,9 +94,12 @@ export const disableDangerousConsoleMethods = () => {
     
     // Désactiver Function constructor
     if (window.Function) {
-      window.Function = () => {
-        throw new Error('Function() est désactivé pour la sécurité');
-      };
+      const originalFunction = window.Function;
+      window.Function = new Proxy(originalFunction, {
+        construct() {
+          throw new Error('Function() est désactivé pour la sécurité');
+        }
+      }) as FunctionConstructor;
     }
     
     // Masquer les données sensibles dans la console

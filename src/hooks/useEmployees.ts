@@ -3,10 +3,9 @@ import { supabase } from '@/integrations/supabase/client';
 import type { Tables } from '@/integrations/supabase/types';
 
 type Employee = Tables<'employees'>;
-type User = Tables<'users'>;
 
 export const useEmployees = () => {
-  const [employees, setEmployees] = useState<(Employee & { users: User })[]>([]);
+  const [employees, setEmployees] = useState<Employee[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -19,16 +18,7 @@ export const useEmployees = () => {
       setLoading(true);
       const { data, error } = await supabase
         .from('employees')
-        .select(`
-          *,
-          users:user_id (
-            id,
-            name,
-            email,
-            role,
-            created_at
-          )
-        `)
+        .select('*')
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -45,16 +35,7 @@ export const useEmployees = () => {
       const { data, error } = await supabase
         .from('employees')
         .insert([employee])
-        .select(`
-          *,
-          users:user_id (
-            id,
-            name,
-            email,
-            role,
-            created_at
-          )
-        `)
+        .select('*')
         .single();
 
       if (error) throw error;
@@ -72,16 +53,7 @@ export const useEmployees = () => {
         .from('employees')
         .update(updates)
         .eq('id', id)
-        .select(`
-          *,
-          users:user_id (
-            id,
-            name,
-            email,
-            role,
-            created_at
-          )
-        `)
+        .select('*')
         .single();
 
       if (error) throw error;

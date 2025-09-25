@@ -209,14 +209,16 @@ export default function QuickAddProduct({ onProductAdded, onClose }: QuickAddPro
     try {
       const { data, error } = await addProduct({
         name: formData.name,
-        code: formData.code,
-        category: formData.category,
+        qr_code: formData.code,
+        barcode: formData.code,
+        category_id: formData.category,
         selling_price: formData.selling_price,
-        buying_price: formData.buying_price,
+        purchase_price: formData.buying_price,
         current_stock: formData.current_stock,
         min_stock: formData.min_stock,
-        unit: formData.unit,
-        description: formData.description
+        unit: formData.unit || 'pièce',
+        supplier_id: null,
+        expiry_date: null
       });
 
       if (error) {
