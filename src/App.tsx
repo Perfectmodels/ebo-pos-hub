@@ -42,6 +42,12 @@ const App = () => (
   <ErrorBoundary>
     <DataProtection>
       <QueryClientProvider client={queryClient}>
+        <BrowserRouter
+          future={{
+            v7_startTransition: true,
+            v7_relativeSplatPath: true
+          }}
+        >
           <AuthProvider>
             <ThemeProvider>
               <ActivityProvider>
@@ -50,13 +56,7 @@ const App = () => (
                 <Toaster />
                 <Sonner />
                 <PWAInstaller />
-                <BrowserRouter
-                  future={{
-                    v7_startTransition: true,
-                    v7_relativeSplatPath: true
-                  }}
-                >
-                  <Routes>
+                <Routes>
                     {/* Public Routes */}
                     <Route path="/" element={<Home />} />
                     <Route path="/login" element={<Login />} />
@@ -136,12 +136,12 @@ const App = () => (
                     {/* Catch all - 404 */}
                     <Route path="*" element={<NotFound />} />
                   </Routes>
-                </BrowserRouter>
                   </TooltipProvider>
                 </MultiUserProvider>
               </ActivityProvider>
             </ThemeProvider>
           </AuthProvider>
+        </BrowserRouter>
       </QueryClientProvider>
     </DataProtection>
   </ErrorBoundary>

@@ -2,6 +2,8 @@ import { createContext, useContext, useState, useEffect, ReactNode } from 'react
 import { useAuth } from './AuthContext';
 import { businessTypeToActivityId } from '@/utils/activityMapper';
 import { GABON_CONFIG } from '@/config/gabon';
+import { doc, getDoc } from 'firebase/firestore';
+import { firestore } from '@/config/firebase';
 
 export interface ActivityConfig {
   id: string;
@@ -223,9 +225,6 @@ export const ActivityProvider = ({ children }: { children: ReactNode }) => {
       // Récupérer l'activité depuis le profil utilisateur dans Firestore
       const fetchUserActivity = async () => {
         try {
-          const { doc, getDoc } = await import('firebase/firestore');
-          const { firestore } = await import('@/config/firebase');
-          
           const userDoc = await getDoc(doc(firestore, 'businesses', user.uid));
           if (userDoc.exists()) {
             const userData = userDoc.data();

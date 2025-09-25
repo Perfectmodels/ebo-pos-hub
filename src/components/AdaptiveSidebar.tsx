@@ -49,6 +49,30 @@ export default function AdaptiveSidebar() {
   const { currentActivity, getSidebarItems, isFeatureEnabled } = useActivity();
   const { signOut } = useAuth();
 
+  // Vérification de sécurité
+  if (!currentActivity) {
+    return (
+      <div className="flex flex-col h-full bg-card border-r border-border">
+        <div className="p-4 border-b border-border">
+          <div className="flex items-center gap-2 mb-4">
+            <EboLogo size="sm" variant="minimal" showText={false} />
+            <div>
+              <h2 className="font-bold text-foreground">Ebo'o Gest</h2>
+              <p className="text-xs text-muted-foreground">Chargement...</p>
+            </div>
+          </div>
+        </div>
+        <div className="flex-1 p-4">
+          <div className="animate-pulse">
+            <div className="h-4 bg-muted rounded mb-2"></div>
+            <div className="h-4 bg-muted rounded mb-2"></div>
+            <div className="h-4 bg-muted rounded"></div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   const sidebarItems = getSidebarItems();
 
   const getIcon = (iconName: string) => {
