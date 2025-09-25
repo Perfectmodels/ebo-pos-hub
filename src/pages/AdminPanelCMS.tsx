@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
 import AdminAuth from "@/components/AdminAuth";
+import { collection, getDocs, doc, updateDoc, deleteDoc, addDoc, query, where, orderBy, limit } from "firebase/firestore";
+import { firestore } from "@/config/firebase";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -73,28 +75,41 @@ interface User {
   email: string;
   role: string;
   status: 'active' | 'inactive' | 'pending' | 'suspended';
-  lastLogin: string;
-  registrationDate: string;
+  lastLogin?: string;
+  registrationDate?: string;
+  joinDate?: string;
+  lastActive?: string;
   companyName?: string;
+  company?: string;
   activityType?: string;
   city?: string;
   accessDuration?: number; // en jours
+  duration?: string;
   accessExpiry?: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 interface PME {
   id: string;
   companyName: string;
+  businessName?: string;
   contactName: string;
   email: string;
   phone: string;
   city: string;
   activityType: string;
-  registrationDate: string;
+  businessType?: string;
+  registrationDate?: string;
+  joinDate?: string;
   status: 'active' | 'pending' | 'suspended' | 'approved';
   employeeCount: string;
   businessHours: string;
+  revenue?: number;
+  productsCount?: number;
   documents?: string[];
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 interface SupportMessage {
@@ -147,6 +162,7 @@ export default function AdminPanelCMS() {
         
         if (hoursDiff < 24) {
           setIsAuthenticated(true);
+          fetchAllData(); // Charger les données quand authentifié
         } else {
           localStorage.removeItem('admin_authenticated');
           localStorage.removeItem('admin_login_time');
@@ -156,6 +172,74 @@ export default function AdminPanelCMS() {
     
     checkAuth();
   }, []);
+
+  // Fonction pour récupérer toutes les données
+  const fetchAllData = async () => {
+    setLoading(true);
+    try {
+      // Récupérer les utilisateurs
+      const usersSnapshot = await getDocs(collection(firestore, "users"));
+      const usersData = usersSnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      })) as User[];
+      setUsers(usersData);
+
+      // Récupérer les PME (businesses)
+      const businessesSnapshot = await getDocs(collection(firestore, "businesses"));
+      const businessesData = businessesSnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      })) as PME[];
+      setPMEs(businessesData);
+
+      // Récupérer les messages de support (simulation pour l'instant)
+      setSupportMessages([]);
+
+      // Récupérer le contenu des pages (simulation pour l'instant)
+      setPageContents([]);
+
+      // Calculer les statistiques
+      calculateStats(usersData, businessesData);
+
+    } catch (error) {
+      console.error('Erreur lors du chargement des données:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Fonction pour calculer les statistiques
+  const calculateStats = (usersData: User[], businessesData: PME[]) => {
+    const now = new Date();
+    const lastMonth = new Date(now.getFullYear(), now.getMonth() - 1, now.getDate());
+    
+    const activeUsers = usersData.filter(user => user.status === 'active').length;
+    const newRegistrations = usersData.filter(user => 
+      new Date(user.joinDate || user.registrationDate || '') > lastMonth
+    ).length;
+    
+    const totalRevenue = businessesData.reduce((sum, business) => 
+      sum + (business.revenue || 0), 0
+    );
+    
+    const totalProducts = businessesData.reduce((sum, business) => 
+      sum + (business.productsCount || 0), 0
+    );
+
+    setStats({
+      totalUsers: usersData.length,
+      totalPMEs: businessesData.length,
+      totalSales: 0, // À calculer depuis les ventes
+      totalProducts,
+      activeUsers,
+      newRegistrations,
+      revenue: totalRevenue,
+      growth: newRegistrations > 0 ? ((newRegistrations / usersData.length) * 100) : 0,
+      supportMessages: 0,
+      pendingApprovals: usersData.filter(user => user.status === 'pending').length
+    });
+  };
 
   const handleLogout = () => {
     localStorage.removeItem('admin_authenticated');
@@ -173,9 +257,8 @@ export default function AdminPanelCMS() {
     try {
       setLoading(true);
       
-      // Simuler la création d'utilisateur (remplacer par l'API Firebase)
-      const newUser: User = {
-        id: Date.now().toString(),
+      // Créer l'utilisateur dans Firebase
+      const userData = {
         name: userForm.name,
         email: userForm.email,
         role: userForm.role || 'user',
@@ -183,24 +266,20 @@ export default function AdminPanelCMS() {
         joinDate: new Date().toISOString(),
         lastActive: new Date().toISOString(),
         company: userForm.company || '',
-        permissions: ['basic']
+        duration: userForm.duration || '30',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
       };
 
-      setUsers(prev => [...prev, newUser]);
-      setStats(prev => ({ ...prev, totalUsers: prev.totalUsers + 1, newRegistrations: prev.newRegistrations + 1 }));
+      // Ajouter l'utilisateur à Firestore
+      await addDoc(collection(firestore, "users"), userData);
       
-      // Réinitialiser le formulaire
-      setUserForm({
-        name: '',
-        email: '',
-        password: '',
-        role: '',
-        duration: '',
-        company: ''
-      });
-      
-      setShowCreateUser(false);
       alert('Utilisateur créé avec succès !');
+      setShowCreateUser(false);
+      resetUserForm();
+      
+      // Recharger les données
+      await fetchAllData();
       
     } catch (error) {
       console.error('Erreur lors de la création de l\'utilisateur:', error);
@@ -220,36 +299,34 @@ export default function AdminPanelCMS() {
     try {
       setLoading(true);
       
-      // Simuler la création de PME (remplacer par l'API Firebase)
-      const newPME: PME = {
-        id: Date.now().toString(),
-        name: pmeForm.name,
-        contact: pmeForm.contact,
+      // Créer la PME dans Firebase
+      const pmeData = {
+        businessName: pmeForm.name,
+        contactName: pmeForm.contact,
         email: pmeForm.email,
-        phone: pmeForm.phone,
-        city: pmeForm.city,
-        activity: pmeForm.activity,
+        phone: pmeForm.phone || '',
+        city: pmeForm.city || '',
+        businessType: pmeForm.activity || '',
         status: 'active',
         joinDate: new Date().toISOString(),
+        lastActive: new Date().toISOString(),
         revenue: 0,
-        employees: 0
+        productsCount: 0,
+        employeeCount: '1',
+        businessHours: '8h-18h',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
       };
 
-      setPMEs(prev => [...prev, newPME]);
-      setStats(prev => ({ ...prev, totalPMEs: prev.totalPMEs + 1 }));
+      // Ajouter la PME à Firestore
+      await addDoc(collection(firestore, "businesses"), pmeData);
       
-      // Réinitialiser le formulaire
-      setPMEForm({
-        name: '',
-        contact: '',
-        email: '',
-        phone: '',
-        city: '',
-        activity: ''
-      });
-      
-      setShowCreatePME(false);
       alert('PME créée avec succès !');
+      setShowCreatePME(false);
+      resetPMEForm();
+      
+      // Recharger les données
+      await fetchAllData();
       
     } catch (error) {
       console.error('Erreur lors de la création de la PME:', error);
@@ -257,6 +334,245 @@ export default function AdminPanelCMS() {
     } finally {
       setLoading(false);
     }
+  };
+
+  // Fonction pour supprimer un utilisateur
+  const handleDeleteUser = async (userId: string) => {
+    if (!confirm('Êtes-vous sûr de vouloir supprimer cet utilisateur ?')) {
+      return;
+    }
+
+    try {
+      setLoading(true);
+      await deleteDoc(doc(firestore, "users", userId));
+      alert('Utilisateur supprimé avec succès !');
+      await fetchAllData();
+    } catch (error) {
+      console.error('Erreur lors de la suppression:', error);
+      alert('Erreur lors de la suppression de l\'utilisateur');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Fonction pour supprimer une PME
+  const handleDeletePME = async (pmeId: string) => {
+    if (!confirm('Êtes-vous sûr de vouloir supprimer cette PME ?')) {
+      return;
+    }
+
+    try {
+      setLoading(true);
+      await deleteDoc(doc(firestore, "businesses", pmeId));
+      alert('PME supprimée avec succès !');
+      await fetchAllData();
+    } catch (error) {
+      console.error('Erreur lors de la suppression:', error);
+      alert('Erreur lors de la suppression de la PME');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Fonction pour modifier le statut d'un utilisateur
+  const handleUpdateUserStatus = async (userId: string, newStatus: string) => {
+    try {
+      setLoading(true);
+      await updateDoc(doc(firestore, "users", userId), {
+        status: newStatus,
+        updatedAt: new Date().toISOString()
+      });
+      alert('Statut utilisateur mis à jour !');
+      await fetchAllData();
+    } catch (error) {
+      console.error('Erreur lors de la mise à jour:', error);
+      alert('Erreur lors de la mise à jour du statut');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Fonction pour modifier le statut d'une PME
+  const handleUpdatePMEStatus = async (pmeId: string, newStatus: string) => {
+    try {
+      setLoading(true);
+      await updateDoc(doc(firestore, "businesses", pmeId), {
+        status: newStatus,
+        updatedAt: new Date().toISOString()
+      });
+      alert('Statut PME mis à jour !');
+      await fetchAllData();
+    } catch (error) {
+      console.error('Erreur lors de la mise à jour:', error);
+      alert('Erreur lors de la mise à jour du statut');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Fonction pour éditer un utilisateur
+  const handleEditUser = async () => {
+    if (!selectedItem || !userForm.name || !userForm.email) {
+      alert('Veuillez remplir tous les champs obligatoires');
+      return;
+    }
+
+    try {
+      setLoading(true);
+      
+      await updateDoc(doc(firestore, "users", selectedItem.id), {
+        name: userForm.name,
+        email: userForm.email,
+        role: userForm.role,
+        company: userForm.company,
+        duration: userForm.duration,
+        updatedAt: new Date().toISOString()
+      });
+      
+      alert('Utilisateur modifié avec succès !');
+      setShowEditUser(false);
+      setSelectedItem(null);
+      resetUserForm();
+      await fetchAllData();
+      
+    } catch (error) {
+      console.error('Erreur lors de la modification:', error);
+      alert('Erreur lors de la modification de l\'utilisateur');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Fonction pour éditer une PME
+  const handleEditPME = async () => {
+    if (!selectedItem || !pmeForm.name || !pmeForm.contact) {
+      alert('Veuillez remplir tous les champs obligatoires');
+      return;
+    }
+
+    try {
+      setLoading(true);
+      
+      await updateDoc(doc(firestore, "businesses", selectedItem.id), {
+        businessName: pmeForm.name,
+        contactName: pmeForm.contact,
+        email: pmeForm.email,
+        phone: pmeForm.phone,
+        city: pmeForm.city,
+        businessType: pmeForm.activity,
+        updatedAt: new Date().toISOString()
+      });
+      
+      alert('PME modifiée avec succès !');
+      setShowEditPME(false);
+      setSelectedItem(null);
+      resetPMEForm();
+      await fetchAllData();
+      
+    } catch (error) {
+      console.error('Erreur lors de la modification:', error);
+      alert('Erreur lors de la modification de la PME');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Fonction pour ouvrir l'édition d'un utilisateur
+  const openEditUser = (user: User) => {
+    setSelectedItem(user);
+    setUserForm({
+      name: user.name,
+      email: user.email,
+      password: '',
+      role: user.role,
+      duration: user.duration || user.accessDuration?.toString() || '30',
+      company: user.company || user.companyName || ''
+    });
+    setShowEditUser(true);
+  };
+
+  // Fonction pour ouvrir l'édition d'une PME
+  const openEditPME = (pme: PME) => {
+    setSelectedItem(pme);
+    setPMEForm({
+      name: pme.businessName || pme.companyName,
+      contact: pme.contactName || '',
+      email: pme.email || '',
+      phone: pme.phone || '',
+      city: pme.city || '',
+      activity: pme.businessType || pme.activityType || ''
+    });
+    setShowEditPME(true);
+  };
+
+  // Fonction pour exporter les données
+  const handleExportData = async (type: 'users' | 'pmes') => {
+    try {
+      const data = type === 'users' ? users : pmes;
+      const csvContent = convertToCSV(data);
+      
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      const url = URL.createObjectURL(blob);
+      link.setAttribute('href', url);
+      link.setAttribute('download', `${type}_export_${new Date().toISOString().split('T')[0]}.csv`);
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      alert(`Export ${type} terminé avec succès !`);
+    } catch (error) {
+      console.error('Erreur lors de l\'export:', error);
+      alert('Erreur lors de l\'export des données');
+    }
+  };
+
+  // Fonction pour convertir les données en CSV
+  const convertToCSV = (data: any[]) => {
+    if (data.length === 0) return '';
+    
+    const headers = Object.keys(data[0]);
+    const csvRows = [headers.join(',')];
+    
+    for (const row of data) {
+      const values = headers.map(header => {
+        const value = row[header];
+        return typeof value === 'string' ? `"${value.replace(/"/g, '""')}"` : value;
+      });
+      csvRows.push(values.join(','));
+    }
+    
+    return csvRows.join('\n');
+  };
+
+  // Fonction pour recharger les données
+  const handleRefresh = async () => {
+    await fetchAllData();
+  };
+
+  // Fonction pour réinitialiser le formulaire utilisateur
+  const resetUserForm = () => {
+    setUserForm({
+      name: '',
+      email: '',
+      password: '',
+      role: '',
+      duration: '',
+      company: ''
+    });
+  };
+
+  // Fonction pour réinitialiser le formulaire PME
+  const resetPMEForm = () => {
+    setPMEForm({
+      name: '',
+      contact: '',
+      email: '',
+      phone: '',
+      city: '',
+      activity: ''
+    });
   };
 
   // Données vides - aucune donnée de test
@@ -508,13 +824,18 @@ export default function AdminPanelCMS() {
                         </TableCell>
                         <TableCell>
                           <div className="flex space-x-2">
-                            <Button variant="outline" size="sm" onClick={() => {
-                              setSelectedItem(user);
-                              setShowEditUser(true);
-                            }}>
+                            <Button 
+                              variant="outline" 
+                              size="sm" 
+                              onClick={() => openEditUser(user)}
+                            >
                               <Edit className="w-4 h-4" />
                             </Button>
-                            <Button variant="outline" size="sm">
+                            <Button 
+                              variant="outline" 
+                              size="sm"
+                              onClick={() => handleDeleteUser(user.id)}
+                            >
                               <Trash2 className="w-4 h-4" />
                             </Button>
                           </div>
@@ -581,12 +902,22 @@ export default function AdminPanelCMS() {
                             <Eye className="w-3 h-3 mr-1" />
                             Voir
                           </Button>
-                          <Button variant="outline" size="sm" className="flex-1" onClick={() => {
-                            setSelectedItem(pme);
-                            setShowEditPME(true);
-                          }}>
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            className="flex-1" 
+                            onClick={() => openEditPME(pme)}
+                          >
                             <Edit className="w-3 h-3 mr-1" />
                             Modifier
+                          </Button>
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            className="text-red-600 hover:text-red-700"
+                            onClick={() => handleDeletePME(pme.id)}
+                          >
+                            <Trash2 className="w-3 h-3" />
                           </Button>
                         </div>
                       </div>
