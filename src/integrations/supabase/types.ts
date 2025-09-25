@@ -14,6 +14,47 @@ export type Database = {
   }
   public: {
     Tables: {
+      audit_logs: {
+        Row: {
+          action: string
+          created_at: string | null
+          id: string
+          new_values: Json | null
+          old_values: Json | null
+          record_id: string | null
+          table_name: string | null
+          user_id: string | null
+        }
+        Insert: {
+          action: string
+          created_at?: string | null
+          id?: string
+          new_values?: Json | null
+          old_values?: Json | null
+          record_id?: string | null
+          table_name?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          action?: string
+          created_at?: string | null
+          id?: string
+          new_values?: Json | null
+          old_values?: Json | null
+          record_id?: string | null
+          table_name?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "audit_logs_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       employees: {
         Row: {
           created_at: string | null
@@ -36,15 +77,7 @@ export type Database = {
           updated_at?: string | null
           user_id?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "employees_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       notifications: {
         Row: {
@@ -77,15 +110,7 @@ export type Database = {
           type?: string | null
           user_id?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "notifications_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       product_categories: {
         Row: {
@@ -114,56 +139,50 @@ export type Database = {
       products: {
         Row: {
           barcode: string | null
-          category: string
           category_id: string | null
           created_at: string | null
-          current_stock: number
+          current_stock: number | null
           expiry_date: string | null
           id: string
-          min_stock: number
+          min_stock: number | null
           name: string
-          purchase_price: number
+          purchase_price: number | null
           qr_code: string | null
-          selling_price: number
-          supplier: string | null
+          selling_price: number | null
           supplier_id: string | null
-          unit: string
+          unit: string | null
           updated_at: string | null
         }
         Insert: {
           barcode?: string | null
-          category: string
           category_id?: string | null
           created_at?: string | null
-          current_stock?: number
+          current_stock?: number | null
           expiry_date?: string | null
           id?: string
-          min_stock?: number
+          min_stock?: number | null
           name: string
-          purchase_price: number
+          purchase_price?: number | null
           qr_code?: string | null
-          selling_price: number
-          supplier?: string | null
+          selling_price?: number | null
           supplier_id?: string | null
-          unit: string
+          unit?: string | null
           updated_at?: string | null
         }
         Update: {
           barcode?: string | null
-          category?: string
           category_id?: string | null
           created_at?: string | null
-          current_stock?: number
+          current_stock?: number | null
           expiry_date?: string | null
           id?: string
-          min_stock?: number
+          min_stock?: number | null
           name?: string
-          purchase_price?: number
+          purchase_price?: number | null
           qr_code?: string | null
-          selling_price?: number
-          supplier?: string | null
+          selling_price?: number | null
           supplier_id?: string | null
-          unit?: string
+          unit?: string | null
           updated_at?: string | null
         }
         Relationships: [
@@ -186,28 +205,31 @@ export type Database = {
       sales: {
         Row: {
           created_at: string | null
-          employee_id: string
+          employee_id: string | null
           id: string
-          product_id: string
+          product_id: string | null
           quantity: number
+          session_id: string | null
           total_amount: number
           unit_price: number
         }
         Insert: {
           created_at?: string | null
-          employee_id: string
+          employee_id?: string | null
           id?: string
-          product_id: string
+          product_id?: string | null
           quantity: number
+          session_id?: string | null
           total_amount: number
           unit_price: number
         }
         Update: {
           created_at?: string | null
-          employee_id?: string
+          employee_id?: string | null
           id?: string
-          product_id?: string
+          product_id?: string | null
           quantity?: number
+          session_id?: string | null
           total_amount?: number
           unit_price?: number
         }
@@ -224,6 +246,13 @@ export type Database = {
             columns: ["product_id"]
             isOneToOne: false
             referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sales_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "sales_sessions"
             referencedColumns: ["id"]
           },
         ]
@@ -265,15 +294,7 @@ export type Database = {
           target_quantity?: number | null
           updated_at?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "sales_goals_employee_id_fkey"
-            columns: ["employee_id"]
-            isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       sales_sessions: {
         Row: {
@@ -282,9 +303,10 @@ export type Database = {
           end_time: string | null
           id: string
           is_active: boolean | null
-          start_time: string
+          start_time: string | null
           total_items: number | null
           total_sales: number | null
+          updated_at: string | null
         }
         Insert: {
           created_at?: string | null
@@ -292,9 +314,10 @@ export type Database = {
           end_time?: string | null
           id?: string
           is_active?: boolean | null
-          start_time: string
+          start_time?: string | null
           total_items?: number | null
           total_sales?: number | null
+          updated_at?: string | null
         }
         Update: {
           created_at?: string | null
@@ -302,9 +325,10 @@ export type Database = {
           end_time?: string | null
           id?: string
           is_active?: boolean | null
-          start_time?: string
+          start_time?: string | null
           total_items?: number | null
           total_sales?: number | null
+          updated_at?: string | null
         }
         Relationships: [
           {
@@ -320,29 +344,29 @@ export type Database = {
         Row: {
           created_at: string | null
           id: string
-          product_id: string
+          product_id: string | null
           quantity: number
           reason: string | null
           type: string
-          user_id: string
+          user_id: string | null
         }
         Insert: {
           created_at?: string | null
           id?: string
-          product_id: string
+          product_id?: string | null
           quantity: number
           reason?: string | null
           type: string
-          user_id: string
+          user_id?: string | null
         }
         Update: {
           created_at?: string | null
           id?: string
-          product_id?: string
+          product_id?: string | null
           quantity?: number
           reason?: string | null
           type?: string
-          user_id?: string
+          user_id?: string | null
         }
         Relationships: [
           {
@@ -394,13 +418,51 @@ export type Database = {
         }
         Relationships: []
       }
+      user_profiles: {
+        Row: {
+          address: string | null
+          avatar_url: string | null
+          created_at: string | null
+          id: string
+          phone: string | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          address?: string | null
+          avatar_url?: string | null
+          created_at?: string | null
+          id?: string
+          phone?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          address?: string | null
+          avatar_url?: string | null
+          created_at?: string | null
+          id?: string
+          phone?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_profiles_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       users: {
         Row: {
           created_at: string | null
           email: string
           id: string
           name: string
-          role: string
+          role: string | null
           updated_at: string | null
         }
         Insert: {
@@ -408,7 +470,7 @@ export type Database = {
           email: string
           id?: string
           name: string
-          role: string
+          role?: string | null
           updated_at?: string | null
         }
         Update: {
@@ -416,8 +478,29 @@ export type Database = {
           email?: string
           id?: string
           name?: string
-          role?: string
+          role?: string | null
           updated_at?: string | null
+        }
+        Relationships: []
+      }
+      webhook_events: {
+        Row: {
+          data: Json | null
+          id: string
+          timestamp: string | null
+          type: string
+        }
+        Insert: {
+          data?: Json | null
+          id?: string
+          timestamp?: string | null
+          type: string
+        }
+        Update: {
+          data?: Json | null
+          id?: string
+          timestamp?: string | null
+          type?: string
         }
         Relationships: []
       }

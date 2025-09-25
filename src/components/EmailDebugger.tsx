@@ -289,7 +289,7 @@ export default function EmailDebugger() {
               </div>
               <div className="flex items-start gap-2">
                 <Badge variant="outline">2</Badge>
-                <span>Vérifiez les paramètres SMTP dans Supabase (Authentication > Settings)</span>
+                <span>Vérifiez les paramètres SMTP dans Supabase (Authentication {`>`} Settings)</span>
               </div>
               <div className="flex items-start gap-2">
                 <Badge variant="outline">3</Badge>

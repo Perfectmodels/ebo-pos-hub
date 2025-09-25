@@ -54,7 +54,7 @@ export default function EmailDebug() {
                 <div className="space-y-2">
                   <h4 className="font-semibold text-sm">1. Vérifications Supabase</h4>
                   <ul className="text-sm text-muted-foreground space-y-1">
-                    <li>• Authentication > Settings > Email</li>
+                    <li>• Authentication {`>`} Settings {`>`} Email</li>
                     <li>• Vérifiez que "Enable email confirmations" est activé</li>
                     <li>• Vérifiez la configuration SMTP</li>
                     <li>• Vérifiez les URLs de redirection</li>
