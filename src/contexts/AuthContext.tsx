@@ -69,12 +69,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const signUp = async (email: string, password: string) => {
-    const redirectUrl = getCallbackUrl();
-    
     // Log pour débogage
     console.log('🔍 Inscription utilisateur:', {
       email,
-      redirectUrl,
       environment: process.env.NODE_ENV,
       timestamp: new Date().toISOString()
     });
@@ -83,7 +80,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       email,
       password,
       options: {
-        emailRedirectTo: redirectUrl,
+        // Désactiver la confirmation par email
+        emailRedirectTo: undefined,
         data: {
           app_name: 'Ebo\'o Gest',
           app_url: getRedirectUrl()

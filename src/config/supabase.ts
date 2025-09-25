@@ -14,7 +14,7 @@ export const supabaseConfig = {
   
   // Configuration des emails
   email: {
-    confirmEmail: true,
+    confirmEmail: false, // Désactivé pour simplifier l'inscription
     confirmEmailUrl: process.env.NODE_ENV === 'production' 
       ? 'https://eboo-gest.vercel.app/confirm-signup'
       : 'http://localhost:8080/confirm-signup',

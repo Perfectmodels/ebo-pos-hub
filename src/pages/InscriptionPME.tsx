@@ -219,7 +219,7 @@ export default function InscriptionPME() {
 
           toast({
             title: "Inscription réussie !",
-            description: "Votre compte PME a été créé avec succès. Vérifiez votre email pour confirmer votre compte.",
+            description: "Votre compte PME a été créé avec succès. Vous êtes maintenant connecté.",
           });
 
           navigate('/dashboard');

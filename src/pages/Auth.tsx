@@ -53,7 +53,7 @@ export default function Auth() {
         if (error.message.includes('Invalid login credentials')) {
           errorMessage = "Email ou mot de passe incorrect";
         } else if (error.message.includes('Email not confirmed')) {
-          errorMessage = "Veuillez confirmer votre email avant de vous connecter";
+          errorMessage = "Votre compte n'est pas encore activé. Contactez le support.";
         } else if (error.message.includes('Password should be at least')) {
           errorMessage = "Le mot de passe doit contenir au moins 6 caractères";
         }
