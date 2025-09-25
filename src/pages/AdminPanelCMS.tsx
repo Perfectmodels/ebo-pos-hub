@@ -793,7 +793,7 @@ export default function AdminPanelCMS() {
                 <Label htmlFor="user-name">Nom complet</Label>
                 <Input 
                   id="user-name" 
-                  placeholder="Jean Dupont" 
+                  placeholder="Jean Mba" 
                   value={userForm.name}
                   onChange={(e) => setUserForm(prev => ({ ...prev, name: e.target.value }))}
                 />
@@ -803,7 +803,7 @@ export default function AdminPanelCMS() {
                 <Input 
                   id="user-email" 
                   type="email" 
-                  placeholder="jean@example.com" 
+                  placeholder="jean@lapaillote.ga" 
                   value={userForm.email}
                   onChange={(e) => setUserForm(prev => ({ ...prev, email: e.target.value }))}
                 />
@@ -883,7 +883,7 @@ export default function AdminPanelCMS() {
                 <Label htmlFor="pme-name">Nom de l'entreprise</Label>
                 <Input 
                   id="pme-name" 
-                  placeholder="Restaurant Le Bon Goût" 
+                  placeholder="Restaurant La Paillote" 
                   value={pmeForm.name}
                   onChange={(e) => setPMEForm(prev => ({ ...prev, name: e.target.value }))}
                 />
@@ -904,7 +904,7 @@ export default function AdminPanelCMS() {
                 <Input 
                   id="pme-email" 
                   type="email" 
-                  placeholder="contact@restaurant.com" 
+                  placeholder="contact@lapaillote.ga" 
                   value={pmeForm.email}
                   onChange={(e) => setPMEForm(prev => ({ ...prev, email: e.target.value }))}
                 />
@@ -913,7 +913,7 @@ export default function AdminPanelCMS() {
                 <Label htmlFor="pme-phone">Téléphone</Label>
                 <Input 
                   id="pme-phone" 
-                  placeholder="+237 6 12 34 56 78" 
+                  placeholder="+241 01 23 45 67" 
                   value={pmeForm.phone}
                   onChange={(e) => setPMEForm(prev => ({ ...prev, phone: e.target.value }))}
                 />
@@ -922,12 +922,24 @@ export default function AdminPanelCMS() {
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="pme-city">Ville</Label>
-                <Input 
-                  id="pme-city" 
-                  placeholder="Yaoundé" 
-                  value={pmeForm.city}
-                  onChange={(e) => setPMEForm(prev => ({ ...prev, city: e.target.value }))}
-                />
+                <Select value={pmeForm.city} onValueChange={(value) => setPMEForm(prev => ({ ...prev, city: value }))}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Sélectionner une ville" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Libreville">Libreville</SelectItem>
+                    <SelectItem value="Port-Gentil">Port-Gentil</SelectItem>
+                    <SelectItem value="Franceville">Franceville</SelectItem>
+                    <SelectItem value="Oyem">Oyem</SelectItem>
+                    <SelectItem value="Moanda">Moanda</SelectItem>
+                    <SelectItem value="Lambaréné">Lambaréné</SelectItem>
+                    <SelectItem value="Mouila">Mouila</SelectItem>
+                    <SelectItem value="Koulamoutou">Koulamoutou</SelectItem>
+                    <SelectItem value="Tchibanga">Tchibanga</SelectItem>
+                    <SelectItem value="Lastoursville">Lastoursville</SelectItem>
+                    <SelectItem value="Autre">Autre</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
               <div>
                 <Label htmlFor="pme-activity">Type d'activité</Label>
@@ -944,6 +956,10 @@ export default function AdminPanelCMS() {
                     <SelectItem value="boulangerie">Boulangerie</SelectItem>
                     <SelectItem value="traiteur">Traiteur</SelectItem>
                     <SelectItem value="loisirs">Loisirs</SelectItem>
+                    <SelectItem value="hotel">Hôtel</SelectItem>
+                    <SelectItem value="service">Service</SelectItem>
+                    <SelectItem value="pharmacie">Pharmacie</SelectItem>
+                    <SelectItem value="supermarche">Supermarché</SelectItem>
                   </SelectContent>
                 </Select>
               </div>

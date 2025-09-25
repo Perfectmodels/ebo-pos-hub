@@ -3,7 +3,7 @@
   "private": true,
   "version": "2.0.0",
   "type": "module",
-  "description": "Solution de gestion complète et moderne pour restaurants, snacks, bars, cafés et commerces au Cameroun et en Afrique",
+  "description": "Solution de gestion complète et moderne pour restaurants, snacks, bars, cafés et commerces au Gabon et en Afrique",
   "keywords": [
     "pos",
     "restaurant",
@@ -11,7 +11,7 @@
     "cafe",
     "gestion",
     "pme",
-    "cameroun",
+    "gabon",
     "afrique",
     "firebase",
     "react",

@@ -12,6 +12,7 @@ import {
 } from 'firebase/auth';
 import { doc, setDoc, getDoc } from 'firebase/firestore'; // Import firestore functions
 import { auth, firestore } from '@/config/firebase';
+import { sendWelcomeEmail } from '@/services/emailService';
 
 interface BusinessData {
   businessName: string;
@@ -90,6 +91,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       await setDoc(doc(firestore, "users", user.uid), userProfile);
 
+      // Envoyer l'email de bienvenue
+      try {
+        await sendWelcomeEmail({
+          userName: businessData.businessName || user.displayName || 'Utilisateur',
+          businessName: businessData.businessName,
+          businessType: businessData.businessType,
+          email: user.email || '',
+          loginUrl: `${window.location.origin}/login`
+        });
+        console.log('✅ Email de bienvenue envoyé avec succès');
+      } catch (emailError) {
+        console.error('⚠️ Erreur lors de l\'envoi de l\'email de bienvenue :', emailError);
+        // On continue même si l'email échoue
+      }
+
       return { error: null };
     } catch (error) {
       return { error };
@@ -118,6 +134,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         };
         
         await setDoc(doc(firestore, "businesses", user.uid), defaultBusinessData);
+        
+        // Envoyer l'email de bienvenue pour les nouveaux utilisateurs Google
+        try {
+          await sendWelcomeEmail({
+            userName: user.displayName || 'Utilisateur',
+            businessName: defaultBusinessData.businessName,
+            businessType: defaultBusinessData.businessType,
+            email: user.email || '',
+            loginUrl: `${window.location.origin}/login`
+          });
+          console.log('✅ Email de bienvenue envoyé avec succès (Google)');
+        } catch (emailError) {
+          console.error('⚠️ Erreur lors de l\'envoi de l\'email de bienvenue (Google) :', emailError);
+        }
         
         return { error: null, isNewUser: true, needsSetup: true };
       }

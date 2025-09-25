@@ -103,10 +103,10 @@ export default function HomeNew() {
   ];
 
   const stats = [
-    { number: "500+", label: "PMEs Actives", icon: Store },
-    { number: "50K+", label: "Transactions", icon: TrendingUp },
+    { number: "200+", label: "PMEs Gabonaises", icon: Store },
+    { number: "25K+", label: "Transactions", icon: TrendingUp },
     { number: "99.9%", label: "Disponibilité", icon: Shield },
-    { number: "24/7", label: "Support", icon: Clock }
+    { number: "24/7", label: "Support Libreville", icon: Clock }
   ];
 
   const testimonials = [

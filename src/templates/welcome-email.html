@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bienvenue sur Ebo'o Gest - Gabon</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f8f9fa;
+        }
+        .container {
+            background: white;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 3px solid #3b82f6;
+        }
+        .logo {
+            font-size: 28px;
+            font-weight: bold;
+            color: #3b82f6;
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            color: #666;
+            font-size: 16px;
+        }
+        .welcome-message {
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            text-align: center;
+        }
+        .business-info {
+            background: #f1f5f9;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border-left: 4px solid #3b82f6;
+        }
+        .features {
+            margin: 20px 0;
+        }
+        .feature-item {
+            display: flex;
+            align-items: center;
+            margin: 10px 0;
+            padding: 8px 0;
+        }
+        .feature-icon {
+            margin-right: 10px;
+            font-size: 16px;
+        }
+        .tips {
+            background: #fef3c7;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border-left: 4px solid #f59e0b;
+        }
+        .cta-button {
+            display: inline-block;
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            color: white;
+            padding: 15px 30px;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: bold;
+            margin: 20px 0;
+            text-align: center;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #e5e7eb;
+            color: #666;
+            font-size: 14px;
+        }
+        .social-links {
+            margin: 20px 0;
+            text-align: center;
+        }
+        .social-links a {
+            color: #3b82f6;
+            text-decoration: none;
+            margin: 0 10px;
+        }
+        .gabon-info {
+            background: #10b981;
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">🏪 Ebo'o Gest</div>
+            <div class="subtitle">Solution de gestion pour PME gabonaises</div>
+        </div>
+
+        <div class="welcome-message">
+            <h1>Bienvenue {{USER_NAME}} ! 🎉</h1>
+            <p>Votre compte a été créé avec succès sur Ebo'o Gest</p>
+        </div>
+
+        <div class="business-info">
+            <h2>{{BUSINESS_ICON}} Votre entreprise : {{BUSINESS_NAME}}</h2>
+            <p><strong>Type d'activité :</strong> {{BUSINESS_TYPE}}</p>
+            <p><strong>Email :</strong> {{EMAIL}}</p>
+            <p><strong>Date d'inscription :</strong> {{DATE}}</p>
+        </div>
+
+        <div class="gabon-info">
+            <h3>🇬🇦 Spécialement conçu pour le Gabon</h3>
+            <p>Ebo'o Gest est adapté aux besoins des entreprises gabonaises avec support du FCFA, 
+            gestion des villes gabonaises et fonctionnalités locales.</p>
+        </div>
+
+        <div class="features">
+            <h3>🚀 Fonctionnalités pour {{BUSINESS_TYPE}} :</h3>
+            {{FEATURES_LIST}}
+        </div>
+
+        <div class="tips">
+            <h3>💡 Conseils pour bien démarrer :</h3>
+            {{TIPS_LIST}}
+        </div>
+
+        <div style="text-align: center;">
+            <a href="{{LOGIN_URL}}" class="cta-button">
+                🚀 Accéder à votre tableau de bord
+            </a>
+        </div>
+
+        <div class="footer">
+            <p><strong>Besoin d'aide ?</strong></p>
+            <p>📧 Email : Asseko19@gmail.com</p>
+            <p>📞 Téléphone : +241 74 06 64 61</p>
+            <p>📍 Libreville, Gabon</p>
+            <br>
+            <p>Ebo'o Gest - Transformez votre gestion d'entreprise au Gabon</p>
+            <p>© 2025 Ebo'o Gest. Tous droits réservés.</p>
+        </div>
+    </div>
+</body>
+</html>

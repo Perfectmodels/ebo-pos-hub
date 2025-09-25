@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useAuth } from './AuthContext';
 import { businessTypeToActivityId } from '@/utils/activityMapper';
+import { GABON_CONFIG } from '@/config/gabon';
 
 export interface ActivityConfig {
   id: string;

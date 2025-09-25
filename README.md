@@ -1,12 +1,12 @@
 # Ebo'o Gest - Solution de Gestion Multi-Activités PME
 
-Solution de gestion complète et moderne pour restaurants, snacks, bars, cafés et commerces au Cameroun et en Afrique. Expérience utilisateur de niveau professionnel avec fonctionnalités avancées.
+Solution de gestion complète et moderne pour restaurants, snacks, bars, cafés et commerces au Gabon et en Afrique. Expérience utilisateur de niveau professionnel avec fonctionnalités avancées.
 
 **URL de production**: https://eboo-gest.vercel.app
 
 ## 🚀 À propos
 
-Ebo'o Gest est une solution de gestion complète et moderne adaptée aux PME du secteur de la restauration et du commerce. Elle offre une expérience utilisateur exceptionnelle avec des fonctionnalités avancées, des tutoriels interactifs, des thèmes personnalisés et un mode multi-utilisateur pour une gestion optimale de votre entreprise.
+Ebo'o Gest est une solution de gestion complète et moderne adaptée aux PME du secteur de la restauration et du commerce au Gabon. Elle offre une expérience utilisateur exceptionnelle avec des fonctionnalités avancées, des tutoriels interactifs, des thèmes personnalisés et un mode multi-utilisateur pour une gestion optimale de votre entreprise gabonaise.
 
 ## ✨ Fonctionnalités Principales
 
