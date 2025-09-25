@@ -82,143 +82,35 @@ export const secureError = (message: string, error?: any) => {
   console.error(`[SECURE ERROR] ${message}`, sanitizedError);
 };
 
-// Désactiver les méthodes de console dangereuses
+// Désactiver les méthodes de console dangereuses (version simplifiée)
 export const disableDangerousConsoleMethods = () => {
-  if (typeof window !== 'undefined') {
-    // Désactiver eval
-    if (window.eval) {
-      window.eval = () => {
-        throw new Error('eval() est désactivé pour la sécurité');
-      };
-    }
-    
-    // Désactiver Function constructor
-    if (window.Function) {
-      const originalFunction = window.Function;
-      window.Function = new Proxy(originalFunction, {
-        construct() {
-          throw new Error('Function() est désactivé pour la sécurité');
-        }
-      }) as FunctionConstructor;
-    }
-    
-    // Masquer les données sensibles dans la console
+  // Version simplifiée pour éviter les conflits
+  if (typeof window !== 'undefined' && process.env.NODE_ENV === 'production') {
+    // Seulement en production, masquer les données sensibles
     const originalConsole = { ...console };
     
-    // Override console.log
     console.log = (...args: any[]) => {
-      if (securityConfig.disableConsoleInProduction) return;
-      
       const sanitizedArgs = args.map(arg => 
         typeof arg === 'object' ? sanitizeData(arg) : arg
       );
       originalConsole.log(...sanitizedArgs);
     };
-    
-    // Override console.error
-    console.error = (...args: any[]) => {
-      if (securityConfig.disableConsoleInProduction) return;
-      
-      const sanitizedArgs = args.map(arg => 
-        typeof arg === 'object' ? sanitizeData(arg) : arg
-      );
-      originalConsole.error(...sanitizedArgs);
-    };
-    
-    // Override console.warn
-    console.warn = (...args: any[]) => {
-      if (securityConfig.disableConsoleInProduction) return;
-      
-      const sanitizedArgs = args.map(arg => 
-        typeof arg === 'object' ? sanitizeData(arg) : arg
-      );
-      originalConsole.warn(...sanitizedArgs);
-    };
-    
-    // Override console.info
-    console.info = (...args: any[]) => {
-      if (securityConfig.disableConsoleInProduction) return;
-      
-      const sanitizedArgs = args.map(arg => 
-        typeof arg === 'object' ? sanitizeData(arg) : arg
-      );
-      originalConsole.info(...sanitizedArgs);
-    };
-    
-    // Override console.debug
-    console.debug = (...args: any[]) => {
-      if (securityConfig.disableConsoleInProduction) return;
-      
-      const sanitizedArgs = args.map(arg => 
-        typeof arg === 'object' ? sanitizeData(arg) : arg
-      );
-      originalConsole.debug(...sanitizedArgs);
-    };
   }
 };
 
-// Détecter l'accès à la console
+// Détecter l'accès à la console (version simplifiée)
 export const detectConsoleAccess = () => {
-  if (typeof window !== 'undefined') {
-    let devtools = false;
-    
-    const checkDevtools = () => {
-      if (window.outerHeight - window.innerHeight > 160 || 
-          window.outerWidth - window.innerWidth > 160) {
-        if (!devtools) {
-          devtools = true;
-          console.warn(securityConfig.securityWarnings.consoleAccess);
-        }
-      } else {
-        devtools = false;
-      }
-    };
-    
-    setInterval(checkDevtools, 500);
-    
-    // Détecter l'ouverture de la console
-    let consoleOpened = false;
-    const detectConsole = () => {
-      if (!consoleOpened) {
-        consoleOpened = true;
-        console.warn(securityConfig.securityWarnings.dataAccess);
-      }
-    };
-    
-    // Détecter F12, Ctrl+Shift+I, etc.
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'F12' || 
-          (e.ctrlKey && e.shiftKey && e.key === 'I') ||
-          (e.ctrlKey && e.shiftKey && e.key === 'C') ||
-          (e.ctrlKey && e.shiftKey && e.key === 'J')) {
-        detectConsole();
-      }
-    });
-    
-    // Détecter le clic droit
-    document.addEventListener('contextmenu', detectConsole);
+  // Version simplifiée qui ne bloque pas le développement
+  if (typeof window !== 'undefined' && process.env.NODE_ENV === 'production') {
+    console.warn(securityConfig.securityWarnings.consoleAccess);
   }
 };
 
-// Initialiser la sécurité
+// Initialiser la sécurité (version simplifiée)
 export const initSecurity = () => {
-  disableDangerousConsoleMethods();
-  detectConsoleAccess();
-  
-  // Masquer les données sensibles dans le localStorage
-  if (typeof window !== 'undefined') {
-    const originalSetItem = localStorage.setItem;
-    localStorage.setItem = (key: string, value: string) => {
-      const isSensitive = securityConfig.sensitiveFields.some(field => 
-        key.toLowerCase().includes(field)
-      );
-      
-      if (isSensitive) {
-        console.warn(`[SECURITY] Tentative d'accès à un champ sensible: ${key}`);
-        return;
-      }
-      
-      originalSetItem.call(localStorage, key, value);
-    };
+  // Version simplifiée qui ne casse pas l'application
+  if (process.env.NODE_ENV === 'production') {
+    disableDangerousConsoleMethods();
+    detectConsoleAccess();
   }
 };
