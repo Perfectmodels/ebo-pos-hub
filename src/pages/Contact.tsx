@@ -93,7 +93,7 @@ export default function Contact() {
       icon: Phone,
       title: "Téléphone",
       value: "+241 74 06 64 61",
-      description: "Disponible 9h-18h",
+      description: "Disponible 9h-20h",
       action: "tel:+24174066461",
       color: "text-green-600"
     },
