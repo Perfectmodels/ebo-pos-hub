@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -52,8 +53,7 @@ export default function Contact() {
     try {
       setLoading(true);
       
-      // Ici vous pouvez ajouter la logique d'envoi d'email
-      // Pour l'instant, on simule l'envoi
+      // Simulate sending email
       await new Promise(resolve => setTimeout(resolve, 1000));
       
       toast({
@@ -134,7 +134,7 @@ export default function Contact() {
               <Link to="/auth">
                 <Button variant="outline">Connexion</Button>
               </Link>
-              <Link to="/inscription">
+              <Link to="/auth">
                 <Button className="btn-gradient">Inscription PME</Button>
               </Link>
             </div>
@@ -322,7 +322,7 @@ export default function Contact() {
                   </Link>
                 </Button>
                 <Button variant="outline" className="w-full justify-start" asChild>
-                  <Link to="/inscription">
+                  <Link to="/auth">
                     <CheckCircle className="w-4 h-4 mr-2" />
                     Problème d'inscription
                   </Link>
@@ -348,8 +348,7 @@ export default function Contact() {
               </CardHeader>
               <CardContent>
                 <p className="text-muted-foreground">
-                  Cliquez sur "Inscription PME" et suivez le formulaire en 6 étapes. 
-                  Vous recevrez un email de confirmation.
+                  Allez sur la page d'authentification, sélectionnez l'onglet "Inscription PME" et remplissez le formulaire. C'est simple et rapide.
                 </p>
               </CardContent>
             </Card>

@@ -1,15 +1,32 @@
+
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { User, Session } from '@supabase/supabase-js';
-import { supabase } from '@/integrations/supabase/client';
+import {
+  onAuthStateChanged,
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  signInWithPopup,
+  GoogleAuthProvider,
+  signOut as firebaseSignOut,
+  sendPasswordResetEmail,
+  User
+} from 'firebase/auth';
+import { doc, setDoc } from 'firebase/firestore'; // Import firestore functions
+import { auth, firestore } from '@/config/firebase';
+
+interface BusinessData {
+  businessName: string;
+  businessType: string;
+  currency: string;
+}
 
 interface AuthContextType {
   user: User | null;
-  session: Session | null;
   loading: boolean;
   signIn: (email: string, password: string) => Promise<{ error: any }>;
-  signUp: (email: string, password: string) => Promise<{ error: any }>;
-  signInWithGoogle: () => Promise<{ error: any }>;
+  signUp: (email: string, password: string, businessData: BusinessData) => Promise<{ error: any }>;
+  signInWithGoogle: () => Promise<{ error: any, isNewUser?: boolean }>;
   signOut: () => Promise<void>;
+  forgotPassword: (email: string) => Promise<{ error: any }>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -24,97 +41,80 @@ export const useAuth = () => {
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
-  const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Set up auth state listener FIRST
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
-        setSession(session);
-        setUser(session?.user ?? null);
-        setLoading(false);
-      }
-    );
-
-    // THEN check for existing session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      setUser(user);
       setLoading(false);
     });
-
-    return () => subscription.unsubscribe();
+    return () => unsubscribe();
   }, []);
 
   const signIn = async (email: string, password: string) => {
     try {
-      const { error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-      
-      if (error) {
-        console.error('Sign in error:', error);
-        return { error };
-      }
-      
+      await signInWithEmailAndPassword(auth, email, password);
       return { error: null };
-    } catch (err) {
-      console.error('Sign in exception:', err);
-      return { error: err };
+    } catch (error) {
+      return { error };
     }
   };
 
-  const signUp = async (email: string, password: string) => {
+  const signUp = async (email: string, password: string, businessData: BusinessData) => {
     try {
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          // Configuration pour l'inscription
-          emailRedirectTo: `${window.location.origin}/dashboard`,
-          data: {
-            email: email
-          }
-        }
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+
+      // Save business data to Firestore
+      await setDoc(doc(firestore, "businesses", user.uid), {
+        ownerId: user.uid,
+        email: user.email,
+        ...businessData,
+        createdAt: new Date().toISOString(),
       });
 
-      if (error) {
-        console.error('Sign up error:', error);
-        return { error };
-      }
-      
       return { error: null };
-    } catch (err) {
-      console.error('Sign up exception:', err);
-      return { error: err };
+    } catch (error) {
+      return { error };
     }
   };
 
   const signInWithGoogle = async () => {
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: {
-        redirectTo: `${window.location.origin}/dashboard`
-      }
-    });
-    
-    return { error };
+     try {
+      const provider = new GoogleAuthProvider();
+      const result = await signInWithPopup(auth, provider);
+      
+      // This is a simple way to check if it's a new user.
+      // A more robust method would involve checking if a document for this user exists in Firestore.
+      const isNewUser = result.user.metadata.creationTime === result.user.metadata.lastSignInTime;
+      
+      return { error: null, isNewUser };
+    } catch (error) {
+      return { error };
+    }
   };
 
   const signOut = async () => {
-    await supabase.auth.signOut();
+    await firebaseSignOut(auth);
+  };
+
+  const forgotPassword = async (email: string) => {
+    try {
+      await sendPasswordResetEmail(auth, email);
+      return { error: null };
+    } catch (error) {
+      return { error };
+    }
   };
 
   const value = {
     user,
-    session,
     loading,
     signIn,
     signUp,
     signInWithGoogle,
     signOut,
+    forgotPassword,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

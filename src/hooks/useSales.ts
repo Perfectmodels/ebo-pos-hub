@@ -1,124 +1,159 @@
-import { useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
-import type { Tables } from '@/integrations/supabase/types';
+import { useState, useEffect, useCallback } from 'react';
+import { firestore } from '@/config/firebase';
+import { collection, query, where, getDocs, addDoc, updateDoc, doc, serverTimestamp, Timestamp } from 'firebase/firestore';
+import { useAuth } from '@/contexts/AuthContext';
 
-type Sale = Tables<'sales'>;
-type SalesSession = Tables<'sales_sessions'>;
+export interface SaleItem {
+  id: string;
+  name: string;
+  price: number;
+  quantity: number;
+}
+
+export interface Sale {
+  id: string;
+  business_id: string;
+  employee_id: string;
+  items: SaleItem[];
+  total: number;
+  createdAt: Timestamp; // Firestore timestamp
+}
+
+export interface SalesSession {
+  id:string;
+  business_id: string;
+  employee_id: string;
+  start_time: Timestamp;
+  end_time?: Timestamp;
+  is_active: boolean;
+}
 
 export const useSales = () => {
+  const { user } = useAuth();
   const [sales, setSales] = useState<Sale[]>([]);
   const [sessions, setSessions] = useState<SalesSession[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    fetchSales();
-    fetchSessions();
-  }, []);
-
-  const fetchSales = async () => {
+  const fetchSales = useCallback(async () => {
+    if (!user) {
+      setSales([]);
+      setLoading(false);
+      return;
+    }
+    setLoading(true);
     try {
-      setLoading(true);
-      const { data, error } = await supabase
-        .from('sales')
-        .select(`
-          *,
-          products:product_id (
-            name,
-            selling_price
-          )
-        `)
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-      setSales(data || []);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Erreur lors du chargement des ventes');
+      const q = query(collection(firestore, 'sales'), where('business_id', '==', user.uid));
+      const querySnapshot = await getDocs(q);
+      const salesData = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Sale));
+      setSales(salesData);
+      setError(null);
+    } catch (e: any) {
+      setError(e.message);
+      console.error("Failed to fetch sales:", e);
     } finally {
       setLoading(false);
     }
-  };
+  }, [user]);
 
-  const fetchSessions = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('sales_sessions')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-      setSessions(data || []);
-    } catch (err) {
-      console.error('Erreur lors du chargement des sessions:', err);
+  const fetchSessions = useCallback(async () => {
+    if (!user) {
+        setSessions([]);
+        return;
     }
-  };
-
-  const addSale = async (sale: Omit<Sale, 'id' | 'created_at'>) => {
     try {
-      const { data, error } = await supabase
-        .from('sales')
-        .insert([sale])
-        .select()
-        .single();
+      const q = query(collection(firestore, 'sales_sessions'), where('business_id', '==', user.uid));
+      const querySnapshot = await getDocs(q);
+      const sessionsData = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as SalesSession));
+      setSessions(sessionsData);
+    } catch (e: any) {
+      console.error('Failed to fetch sessions:', e);
+    }
+  }, [user]);
 
-      if (error) throw error;
-      setSales(prev => [data, ...prev]);
-      return { data, error: null };
+  useEffect(() => {
+    if (user) {
+        fetchSales();
+        fetchSessions();
+    }
+  }, [user, fetchSales, fetchSessions]);
+
+  const addSale = async (saleData: Omit<Sale, 'id' | 'createdAt' | 'business_id'>) => {
+    if (!user) {
+        const err = 'User not authenticated';
+        setError(err);
+        return { data: null, error: err };
+    }
+    try {
+      const docRef = await addDoc(collection(firestore, 'sales'), {
+        ...saleData,
+        business_id: user.uid,
+        createdAt: serverTimestamp(),
+      });
+      await fetchSales(); // Refresh sales list
+      return { data: { id: docRef.id, ...saleData }, error: null };
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Erreur lors de l\'enregistrement de la vente';
+      setError(errorMessage);
       return { data: null, error: errorMessage };
     }
   };
 
   const startSession = async (employeeId: string) => {
+    if (!user) {
+        const err = 'User not authenticated';
+        setError(err);
+        return { data: null, error: err };
+    }
     try {
-      const { data, error } = await supabase
-        .from('sales_sessions')
-        .insert([{
-          employee_id: employeeId,
-          start_time: new Date().toISOString(),
-          is_active: true
-        }])
-        .select()
-        .single();
-
-      if (error) throw error;
-      setSessions(prev => [data, ...prev]);
-      return { data, error: null };
+      const docRef = await addDoc(collection(firestore, 'sales_sessions'), {
+        employee_id: employeeId,
+        start_time: serverTimestamp(),
+        is_active: true,
+        business_id: user.uid,
+      });
+       await fetchSessions(); // Refresh sessions list
+      return { data: { id: docRef.id }, error: null };
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Erreur lors du démarrage de la session';
+      setError(errorMessage);
       return { data: null, error: errorMessage };
     }
   };
 
   const endSession = async (sessionId: string) => {
+    if(!user) {
+        const err = 'User not authenticated';
+        setError(err);
+        return { data: null, error: err };
+    }
     try {
-      const { data, error } = await supabase
-        .from('sales_sessions')
-        .update({
-          end_time: new Date().toISOString(),
-          is_active: false
-        })
-        .eq('id', sessionId)
-        .select()
-        .single();
-
-      if (error) throw error;
-      setSessions(prev => prev.map(s => s.id === sessionId ? data : s));
-      return { data, error: null };
+      const sessionRef = doc(firestore, 'sales_sessions', sessionId);
+      await updateDoc(sessionRef, {
+        end_time: serverTimestamp(),
+        is_active: false
+      });
+      await fetchSessions(); // Refresh sessions list
+      const updatedDoc = sessions.find(s => s.id === sessionId);
+      return { data: updatedDoc, error: null };
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Erreur lors de la fermeture de la session';
+      setError(errorMessage);
       return { data: null, error: errorMessage };
     }
   };
 
   const getTodayStats = () => {
-    const today = new Date().toISOString().split('T')[0];
-    const todaySales = sales.filter(sale => 
-      sale.created_at?.startsWith(today)
-    );
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
 
-    const totalRevenue = todaySales.reduce((sum, sale) => sum + sale.total_amount, 0);
+    const todaySales = sales.filter(sale => {
+        if (!sale.createdAt?.toDate) return false;
+        const saleDate = sale.createdAt.toDate();
+        return saleDate >= today;
+    });
+
+    const totalRevenue = todaySales.reduce((sum, sale) => sum + sale.total, 0);
     const totalOrders = todaySales.length;
     const avgOrder = totalOrders > 0 ? totalRevenue / totalOrders : 0;
 
@@ -133,12 +168,15 @@ export const useSales = () => {
   const getWeeklyStats = () => {
     const weekAgo = new Date();
     weekAgo.setDate(weekAgo.getDate() - 7);
+    weekAgo.setHours(0, 0, 0, 0);
     
-    const weekSales = sales.filter(sale => 
-      sale.created_at && new Date(sale.created_at) >= weekAgo
-    );
+    const weekSales = sales.filter(sale => {
+        if (!sale.createdAt?.toDate) return false;
+        const saleDate = sale.createdAt.toDate();
+        return saleDate >= weekAgo;
+    });
 
-    const totalRevenue = weekSales.reduce((sum, sale) => sum + sale.total_amount, 0);
+    const totalRevenue = weekSales.reduce((sum, sale) => sum + sale.total, 0);
     const totalOrders = weekSales.length;
 
     return {
@@ -158,6 +196,6 @@ export const useSales = () => {
     startSession,
     endSession,
     getTodayStats,
-    getWeeklyStats
+    getWeeklyStats,
   };
 };

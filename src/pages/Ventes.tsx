@@ -1,24 +1,27 @@
-import { useState, useEffect } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+
+import { useState } from 'react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { useProducts } from "@/hooks/useProducts";
-import { useSales } from "@/hooks/useSales";
+import { useProducts } from '@/hooks/useProducts';
+import { useSales } from '@/hooks/useSales';
 import { useAuth } from "@/contexts/AuthContext";
-import { useToast } from "@/hooks/use-toast";
-import QRScanner from "@/components/QRScanner";
+import { Employee } from '@/hooks/useEmployees';
+import PinInput from '@/components/PinInput';
+import { useToast } from '@/hooks/use-toast';
 import { 
-  ShoppingCart, 
-  Plus, 
   Trash2, 
-  CreditCard, 
-  Smartphone,
-  Banknote,
-  Search,
-  Loader2,
-  CheckCircle
-} from "lucide-react";
+  ShoppingCart, 
+  Search, 
+  Plus, 
+  Minus, 
+  X, 
+  Loader2, 
+  User,
+  PackageSearch,
+  LogOut
+} from 'lucide-react';
 
 interface CartItem {
   id: string;
@@ -29,314 +32,246 @@ interface CartItem {
 
 export default function Ventes() {
   const { user } = useAuth();
-  const { products, loading: productsLoading } = useProducts();
-  const { addSale, loading: salesLoading } = useSales();
+  const { products, loading: productsLoading, updateProduct } = useProducts();
+  const { addSale } = useSales();
   const { toast } = useToast();
   
+  const [verifiedEmployee, setVerifiedEmployee] = useState<Employee | null>(null);
   const [cart, setCart] = useState<CartItem[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
-  const [processing, setProcessing] = useState(false);
+  const [finalizing, setFinalizing] = useState(false);
 
-  // Filtrer les produits disponibles
-  const availableProducts = products.filter(product => product.current_stock > 0);
-  
-  const filteredProducts = availableProducts.filter(product =>
-    product.name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const handleEmployeeVerified = (employee: Employee) => {
+    setVerifiedEmployee(employee);
+    toast({
+      title: `Bienvenue, ${employee.full_name}!`,
+      description: "Vous pouvez maintenant commencer à vendre.",
+    });
+  };
 
-  const addToCart = (product: typeof availableProducts[0]) => {
-    // Vérifier le stock disponible
-    const availableStock = product.current_stock;
-    const existingItem = cart.find(item => item.id === product.id);
-    const currentQuantity = existingItem ? existingItem.quantity : 0;
-    
-    if (currentQuantity >= availableStock) {
+  const handleLogout = () => {
+    setVerifiedEmployee(null);
+    setCart([]);
+    toast({
+      title: "Employé déconnecté",
+    });
+  }
+
+  const addToCart = (product: typeof products[0]) => {
+    const existingItem = cart.find((item) => item.id === product.id);
+
+    const stockAvailable = product.current_stock - (existingItem?.quantity || 0);
+
+    if (stockAvailable < 1) {
       toast({
         title: "Stock insuffisant",
-        description: `Il ne reste que ${availableStock} unités de ${product.name}`,
-        variant: "destructive"
+        description: `Le stock pour ${product.name} est épuisé.`,
+        variant: "destructive",
       });
       return;
     }
 
     if (existingItem) {
-      setCart(cart.map(item =>
-        item.id === product.id
-          ? { ...item, quantity: item.quantity + 1 }
-          : item
-      ));
+      setCart(cart.map((item) => (item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item)));
     } else {
-      setCart([...cart, { 
-        id: product.id, 
-        name: product.name, 
-        price: product.selling_price, 
-        quantity: 1 
-      }]);
+      setCart([...cart, { id: product.id, name: product.name, price: product.selling_price, quantity: 1 }]);
     }
   };
 
-  const handleQRScanned = (productData: any) => {
-    // Trouver le produit dans la liste des produits disponibles
-    const product = availableProducts.find(p => p.barcode === productData.code);
-    
-    if (product) {
-      addToCart(product);
+  const updateCartQuantity = (productId: string, newQuantity: number) => {
+    const product = products.find(p => p.id === productId);
+
+    if (newQuantity <= 0) {
+      setCart(cart.filter((item) => item.id !== productId));
+      return;
+    }
+
+    if (product && newQuantity > product.current_stock) {
       toast({
-        title: "Produit ajouté !",
-        description: `${product.name} ajouté au panier`,
+        title: "Stock insuffisant",
+        description: `Il ne reste que ${product.current_stock} unité(s) pour ${product.name}.`,
+        variant: "destructive",
       });
-    } else {
-      toast({
-        title: "Produit non disponible",
-        description: `${productData.name} n'est pas en stock`,
-        variant: "destructive"
-      });
+      return;
     }
+    setCart(cart.map(item => item.id === productId ? { ...item, quantity: newQuantity } : item));
+  };
+  
+  const getTotal = () => {
+    return cart.reduce((total, item) => total + item.price * item.quantity, 0);
   };
 
-  const updateQuantity = (id: string, quantity: number) => {
-    if (quantity <= 0) {
-      removeFromCart(id);
-    } else {
-      setCart(cart.map(item =>
-        item.id === id ? { ...item, quantity } : item
-      ));
-    }
-  };
+  const handleFinalizeSale = async () => {
+    if (cart.length === 0 || !verifiedEmployee || !user) return;
 
-  const removeFromCart = (id: string) => {
-    setCart(cart.filter(item => item.id !== id));
-  };
-
-  const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-
-  const handlePayment = async (method: string) => {
-    if (cart.length === 0 || !user) return;
-    
-    setProcessing(true);
-    
+    setFinalizing(true);
     try {
-      // Enregistrer chaque article comme une vente séparée
-      for (const item of cart) {
-        const { error } = await addSale({
-          product_id: item.id,
-          employee_id: user.id,
-          session_id: null,
-          quantity: item.quantity,
-          unit_price: item.price,
-          total_amount: item.price * item.quantity
-        });
+      const saleData = {
+        business_id: user.uid,
+        employee_id: verifiedEmployee.id,
+        items: cart.map(({ id, name, price, quantity }) => ({ product_id: id, name, price, quantity })),
+        total_amount: getTotal(),
+        created_at: new Date().toISOString(),
+      };
+      
+      const { error: saleError } = await addSale(saleData);
+      if (saleError) throw new Error(saleError);
 
-        if (error) {
-          throw new Error(`Erreur lors de l'enregistrement de ${item.name}: ${error}`);
+      for (const item of cart) {
+        const product = products.find(p => p.id === item.id);
+        if (product) {
+          const newStock = product.current_stock - item.quantity;
+          await updateProduct(product.id, { current_stock: newStock });
         }
       }
 
-      toast({
-        title: "Vente enregistrée",
-        description: `Paiement de ${total.toLocaleString()} FCFA par ${method} effectué avec succès`,
-      });
-
       setCart([]);
-    } catch (error) {
-      toast({
-        title: "Erreur de paiement",
-        description: error instanceof Error ? error.message : "Une erreur s'est produite",
-        variant: "destructive"
-      });
+      toast({ title: 'Vente finalisée', description: 'La vente a été enregistrée avec succès.' });
+
+    } catch (error: any) {
+      console.error("Error finalizing sale: ", error);
+      toast({ title: 'Erreur', description: error.message || 'Impossible de finaliser la vente.', variant: 'destructive' });
     } finally {
-      setProcessing(false);
+      setFinalizing(false);
     }
   };
 
+  const filteredProducts = products.filter(product =>
+    product.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  if (!user || !verifiedEmployee) {
+    return <PinInput onVerified={handleEmployeeVerified} />;
+  }
+
   return (
-    <div className="p-6 space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-foreground">Point de Vente</h1>
-          <p className="text-muted-foreground mt-1">
-            Interface caisse pour enregistrer vos ventes
-          </p>
-        </div>
-      </div>
-
-      <div className="grid gap-6 lg:grid-cols-3">
-        {/* Products Section */}
-        <div className="lg:col-span-2 space-y-4">
-          {/* Search */}
-          <div className="flex gap-2">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Rechercher un produit..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
-              />
-            </div>
+    <div className="flex h-screen bg-muted/20">
+      {/* Product Grid */}
+      <div className="flex-1 flex flex-col p-4">
+        <Card className="mb-4">
+          <CardContent className="p-4 flex items-center gap-4">
+            <Search className="w-5 h-5 text-muted-foreground" />
+            <Input
+              placeholder="Rechercher un produit par nom..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </CardContent>
+        </Card>
+        
+        {productsLoading ? (
+          <div className="flex-1 flex items-center justify-center">
+            <Loader2 className="w-12 h-12 animate-spin text-primary" />
           </div>
-
-          {/* Products Grid */}
-          {productsLoading ? (
-            <div className="flex items-center justify-center py-12">
-              <Loader2 className="w-8 h-8 animate-spin text-primary" />
-              <span className="ml-3 text-muted-foreground">Chargement des produits...</span>
-            </div>
-          ) : filteredProducts.length === 0 ? (
-            <div className="text-center py-12 text-muted-foreground">
-              <Search className="w-12 h-12 mx-auto mb-4 opacity-50" />
-              <p>Aucun produit trouvé</p>
-              <p className="text-sm">
-                {searchTerm ? "Essayez un autre terme de recherche" : "Aucun produit en stock"}
-              </p>
-            </div>
-          ) : (
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {filteredProducts.map((product) => (
+        ) : (
+          <div className="flex-1 overflow-y-auto pr-2">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+              {filteredProducts.map(product => (
                 <Card 
                   key={product.id} 
-                  className="cursor-pointer hover:shadow-medium transition-shadow"
-                  onClick={() => addToCart(product)}
+                  onClick={() => addToCart(product)} 
+                  className="cursor-pointer hover:shadow-lg transition-shadow"
                 >
-                  <CardContent className="p-4">
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between">
-                        <Badge variant="secondary" className="text-xs">
-                          Produit
-                        </Badge>
-                        <Badge 
-                          variant={product.current_stock <= product.min_stock ? "destructive" : "outline"}
-                          className="text-xs"
-                        >
-                          Stock: {product.current_stock}
-                        </Badge>
-                      </div>
-                      <h3 className="font-semibold text-foreground">{product.name}</h3>
-                      <p className="text-xl font-bold text-primary">
-                        {product.selling_price.toLocaleString()} FCFA
-                      </p>
+                  <CardContent className="p-3 flex flex-col justify-between h-full">
+                    <div>
+                      <p className="font-semibold text-sm truncate">{product.name}</p>
+                      <p className="text-xs text-muted-foreground">{product.selling_price.toLocaleString('fr-FR')} FCFA</p>
                     </div>
+                    <Badge variant={product.current_stock > product.min_stock ? "secondary" : "destructive"} className="mt-2 text-xs self-start">
+                      Stock: {product.current_stock}
+                    </Badge>
                   </CardContent>
                 </Card>
               ))}
-            </div>
-          )}
-        </div>
-
-        {/* Cart Section */}
-        <div className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <ShoppingCart className="w-5 h-5" />
-                Panier ({cart.length})
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {cart.length === 0 ? (
-                <p className="text-center text-muted-foreground py-8">
-                  Panier vide
-                </p>
-              ) : (
-                <>
-                  <div className="space-y-3 max-h-60 overflow-y-auto">
-                    {cart.map((item) => (
-                      <div key={item.id} className="flex items-center justify-between p-2 rounded border border-border">
-                        <div className="flex-1">
-                          <p className="font-medium text-sm">{item.name}</p>
-                          <p className="text-xs text-muted-foreground">
-                            {item.price} FCFA x {item.quantity}
-                          </p>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                          >
-                            -
-                          </Button>
-                          <span className="w-8 text-center text-sm">{item.quantity}</span>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                          >
-                            +
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="destructive"
-                            onClick={() => removeFromCart(item.id)}
-                          >
-                            <Trash2 className="w-3 h-3" />
-                          </Button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                  
-                  <div className="border-t pt-4">
-                    <div className="flex justify-between items-center text-lg font-bold">
-                      <span>Total:</span>
-                      <span className="text-primary">{total} FCFA</span>
-                    </div>
-                  </div>
-                </>
+               {filteredProducts.length === 0 && (
+                <div className="col-span-full text-center py-10">
+                  <PackageSearch className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
+                  <p className="font-semibold">Aucun produit trouvé</p>
+                  <p className="text-sm text-muted-foreground">Essayez une autre recherche.</p>
+                </div>
               )}
-            </CardContent>
-          </Card>
+            </div>
+          </div>
+        )}
+      </div>
 
-          {/* Payment Methods */}
-          {cart.length > 0 && (
-            <Card>
-              <CardHeader>
-                <CardTitle>Mode de Paiement</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-2">
-                <Button 
-                  onClick={() => handlePayment('Espèces')}
-                  className="w-full justify-start gap-2"
-                  variant="outline"
-                  disabled={processing}
-                >
-                  {processing ? (
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                  ) : (
-                    <Banknote className="w-4 h-4" />
-                  )}
-                  Espèces
-                </Button>
-                <Button 
-                  onClick={() => handlePayment('Mobile Money')}
-                  className="w-full justify-start gap-2"
-                  variant="outline"
-                  disabled={processing}
-                >
-                  {processing ? (
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                  ) : (
-                    <Smartphone className="w-4 h-4" />
-                  )}
-                  Mobile Money
-                </Button>
-                <Button 
-                  onClick={() => handlePayment('Carte')}
-                  className="w-full justify-start gap-2"
-                  variant="outline"
-                  disabled={processing}
-                >
-                  {processing ? (
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                  ) : (
-                    <CreditCard className="w-4 h-4" />
-                  )}
-                  Carte Bancaire
-                </Button>
-              </CardContent>
-            </Card>
-          )}
-        </div>
+      {/* Cart */}
+      <div className="w-full max-w-sm border-l bg-background flex flex-col shadow-lg">
+        <Card className="flex-1 flex flex-col rounded-none shadow-none border-none">
+          <CardHeader className="border-b">
+            <CardTitle className="flex items-center justify-between">
+              Panier
+              <ShoppingCart className="w-6 h-6 text-primary"/>
+            </CardTitle>
+            <CardDescription className="flex items-center justify-between pt-2">
+              <div className="flex items-center gap-2">
+                <User className="w-4 h-4"/>
+                <span>{verifiedEmployee.full_name}</span>
+              </div>
+              <Button variant="ghost" size="sm" onClick={handleLogout}>
+                <LogOut className="w-4 h-4 mr-2"/>
+                Changer
+              </Button>
+            </CardDescription>
+          </CardHeader>
+          
+          <CardContent className="flex-1 overflow-y-auto p-4">
+            {cart.length === 0 ? (
+              <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground">
+                <ShoppingCart className="w-16 h-16 mb-4"/>
+                <p className="font-semibold">Votre panier est vide</p>
+                <p className="text-sm">Cliquez sur un produit pour l'ajouter.</p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {cart.map(item => (
+                  <div key={item.id} className="flex items-center gap-3">
+                    <div className="flex-1">
+                      <p className="font-medium text-sm">{item.name}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {item.price.toLocaleString('fr-FR')} FCFA
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Button size="icon" variant="outline" className="h-7 w-7" onClick={() => updateCartQuantity(item.id, item.quantity - 1)}>
+                        <Minus className="w-4 h-4"/>
+                      </Button>
+                      <span className="font-bold w-4 text-center">{item.quantity}</span>
+                      <Button size="icon" variant="outline" className="h-7 w-7" onClick={() => updateCartQuantity(item.id, item.quantity + 1)}>
+                        <Plus className="w-4 h-4"/>
+                      </Button>
+                    </div>
+                    <Button size="icon" variant="ghost" className="h-7 w-7 text-destructive" onClick={() => updateCartQuantity(item.id, 0)}>
+                      <Trash2 className="w-4 h-4"/>
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+          
+          <div className="p-4 border-t mt-auto">
+            <div className="flex justify-between items-center mb-4">
+              <span className="text-lg font-semibold">Total</span>
+              <span className="text-2xl font-bold text-primary">
+                {getTotal().toLocaleString('fr-FR')} FCFA
+              </span>
+            </div>
+            <Button 
+              onClick={handleFinalizeSale}
+              disabled={cart.length === 0 || finalizing}
+              className="w-full btn-gradient"
+              size="lg"
+            >
+              {finalizing ? (
+                <Loader2 className="w-5 h-5 mr-2 animate-spin"/>
+              ) : (
+                <ShoppingCart className="w-5 h-5 mr-2"/>
+              )}
+              {finalizing ? "Finalisation..." : "Finaliser la Vente"}
+            </Button>
+          </div>
+        </Card>
       </div>
     </div>
   );

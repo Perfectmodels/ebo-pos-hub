@@ -176,10 +176,10 @@ export default function HomeNew() {
               <Link to="/admin-login" className="text-muted-foreground hover:text-primary transition-colors">
                 Admin
               </Link>
-              <Link to="/auth">
+              <Link to="/login">
                 <Button variant="outline">Connexion</Button>
               </Link>
-              <Link to="/inscription">
+              <Link to="/register">
                 <Button className="btn-gradient">
                   Inscription PME
                   <ArrowRight className="w-4 h-4 ml-2" />
@@ -213,10 +213,10 @@ export default function HomeNew() {
                   Admin
                 </Link>
                 <div className="flex space-x-2 pt-2">
-                  <Link to="/auth" className="flex-1">
+                  <Link to="/login" className="flex-1">
                     <Button variant="outline" className="w-full">Connexion</Button>
                   </Link>
-                  <Link to="/inscription" className="flex-1">
+                  <Link to="/register" className="flex-1">
                     <Button className="btn-gradient w-full">Inscription</Button>
                   </Link>
                 </div>
@@ -263,7 +263,7 @@ export default function HomeNew() {
             <div className={`flex flex-col sm:flex-row gap-4 justify-center mb-12 transition-all duration-1000 delay-300 ${
               isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
             }`}>
-              <Link to="/inscription">
+              <Link to="/register">
                 <Button size="lg" className="btn-gradient text-lg px-8 py-4">
                   <Zap className="w-5 h-5 mr-2" />
                   Commencer Gratuitement
@@ -378,7 +378,7 @@ export default function HomeNew() {
             Rejoignez des centaines d'entreprises qui font confiance à Ebo'o Gest
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link to="/inscription">
+            <Link to="/register">
               <Button size="lg" className="btn-gradient text-lg px-8 py-4">
                 <Zap className="w-5 h-5 mr-2" />
                 Commencer Maintenant

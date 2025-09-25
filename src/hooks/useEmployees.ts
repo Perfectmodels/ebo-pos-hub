@@ -1,122 +1,82 @@
-import { useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
-import type { Tables } from '@/integrations/supabase/types';
 
-type Employee = Tables<'employees'>;
+import { useState, useEffect, useCallback } from 'react';
+import { firestore } from '@/config/firebase';
+import { collection, query, where, getDocs, addDoc, updateDoc, deleteDoc, doc } from 'firebase/firestore';
+import { useAuth } from '@/contexts/AuthContext';
+
+export interface Employee {
+  id: string;
+  full_name: string;
+  role: string;
+  email: string;
+  phone?: string;
+  pin_code?: string; 
+  business_id: string;
+}
 
 export const useEmployees = () => {
+  const { user } = useAuth();
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    fetchEmployees();
-  }, []);
+  const fetchEmployees = useCallback(async () => {
+    if (!user) {
+        setEmployees([]);
+        setLoading(false);
+        return;
+    }
 
-  const fetchEmployees = async () => {
+    setLoading(true);
     try {
-      setLoading(true);
-      const { data, error } = await supabase
-        .from('employees')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-      setEmployees(data || []);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Erreur lors du chargement des employés');
+      const q = query(collection(firestore, 'employees'), where('business_id', '==', user.uid));
+      const querySnapshot = await getDocs(q);
+      const employeesData = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Employee));
+      setEmployees(employeesData);
+      setError(null);
+    } catch (e: any) {
+      setError(e.message);
+      console.error(e);
     } finally {
       setLoading(false);
     }
-  };
+  }, [user]);
 
-  const addEmployee = async (employee: Omit<Employee, 'id' | 'created_at' | 'updated_at'>) => {
+  useEffect(() => {
+    fetchEmployees();
+  }, [fetchEmployees]);
+
+  const addEmployee = async (employeeData: Omit<Employee, 'id'>) => {
     try {
-      const { data, error } = await supabase
-        .from('employees')
-        .insert([employee])
-        .select('*')
-        .single();
-
-      if (error) throw error;
-      setEmployees(prev => [...prev, data]);
-      return { data, error: null };
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Erreur lors de l\'ajout de l\'employé';
-      return { data: null, error: errorMessage };
+        await addDoc(collection(firestore, 'employees'), employeeData);
+        fetchEmployees();
+        return { data: employeeData, error: null };
+    } catch (error: any) {
+        return { data: null, error };
     }
   };
 
   const updateEmployee = async (id: string, updates: Partial<Employee>) => {
     try {
-      const { data, error } = await supabase
-        .from('employees')
-        .update(updates)
-        .eq('id', id)
-        .select('*')
-        .single();
-
-      if (error) throw error;
-      setEmployees(prev => prev.map(emp => emp.id === id ? data : emp));
-      return { data, error: null };
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Erreur lors de la mise à jour';
-      return { data: null, error: errorMessage };
+        const employeeRef = doc(firestore, 'employees', id);
+        await updateDoc(employeeRef, updates);
+        fetchEmployees();
+        return { data: {id, ...updates}, error: null };
+    } catch (error: any) {
+        return { data: null, error };
     }
   };
 
   const deleteEmployee = async (id: string) => {
     try {
-      const { error } = await supabase
-        .from('employees')
-        .delete()
-        .eq('id', id);
-
-      if (error) throw error;
-      setEmployees(prev => prev.filter(emp => emp.id !== id));
-      return { error: null };
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Erreur lors de la suppression';
-      return { error: errorMessage };
+        const employeeRef = doc(firestore, 'employees', id);
+        await deleteDoc(employeeRef);
+        fetchEmployees();
+        return { error: null };
+    } catch (error: any) {
+        return { error };
     }
   };
 
-  const getEmployeeStats = async (employeeId: string) => {
-    try {
-      const { data: sales, error } = await supabase
-        .from('sales')
-        .select('*')
-        .eq('employee_id', employeeId)
-        .gte('created_at', new Date().toISOString().split('T')[0]);
-
-      if (error) throw error;
-
-      const todaySales = sales?.reduce((sum, sale) => sum + sale.total_amount, 0) || 0;
-      const todayOrders = sales?.length || 0;
-
-      return {
-        todaySales,
-        todayOrders,
-        sales: sales || []
-      };
-    } catch (err) {
-      console.error('Erreur lors du calcul des stats employé:', err);
-      return {
-        todaySales: 0,
-        todayOrders: 0,
-        sales: []
-      };
-    }
-  };
-
-  return {
-    employees,
-    loading,
-    error,
-    fetchEmployees,
-    addEmployee,
-    updateEmployee,
-    deleteEmployee,
-    getEmployeeStats
-  };
+  return { employees, loading, error, fetchEmployees, addEmployee, updateEmployee, deleteEmployee };
 };

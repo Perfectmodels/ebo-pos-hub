@@ -1,20 +1,21 @@
+
 import React from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import PWAInstaller from "@/components/PWAInstaller";
 import "@/config/console"; // Configuration console
-import { AuthProvider } from "./contexts/AuthContext";
 import { ActivityProvider } from "./contexts/ActivityContext";
+import { AuthProvider } from "./contexts/AuthContext";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import AdaptiveSidebar from "./components/AdaptiveSidebar";
 import AdaptiveDashboard from "./components/AdaptiveDashboard";
 import Home from "./pages/HomeNew";
-import Auth from "./pages/Auth";
-import InscriptionPME from "./pages/InscriptionPME";
+import Login from "./pages/Login";
+import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
 import Ventes from "./pages/Ventes";
 import Stock from "./pages/Stock";
@@ -23,9 +24,6 @@ import Rapports from "./pages/Rapports";
 import Parametres from "./pages/Parametres";
 import AdminPanel from "./pages/AdminPanelCMS";
 import AdminLogin from "./pages/AdminLogin";
-import AuthErrorHandler from "./components/AuthErrorHandler";
-import AuthCallbackHandler from "./components/AuthCallbackHandler";
-import ConfirmSignup from "./pages/ConfirmSignup";
 import Contact from "./pages/Contact";
 import Guide from "./pages/Guide";
 import NotFound from "./pages/NotFound";
@@ -38,101 +36,93 @@ const App = () => (
   <ErrorBoundary>
     <DataProtection>
       <QueryClientProvider client={queryClient}>
-        <AuthProvider>
-          <ActivityProvider>
-            <TooltipProvider>
-              <Toaster />
-              <Sonner />
-              <PWAInstaller />
-              <BrowserRouter
-                future={{
-                  v7_startTransition: true,
-                  v7_relativeSplatPath: true
-                }}
-              >
-          <Routes>
-                  {/* Public Routes */}
-                  <Route path="/" element={<Home />} />
-                  <Route path="/auth" element={<Auth />} />
-                  <Route path="/auth-error" element={<AuthErrorHandler />} />
-                  <Route path="/auth/callback" element={<AuthCallbackHandler />} />
-                  <Route path="/confirm-signup" element={<ConfirmSignup />} />
-                  <Route path="/inscription-pme" element={<InscriptionPME />} />
-                  <Route path="/inscription" element={<InscriptionPME />} /> {/* Redirect inscription to PME */}
-                  <Route path="/register" element={<InscriptionPME />} /> {/* Redirect register to PME */}
-                  <Route path="/signup" element={<InscriptionPME />} /> {/* Redirect signup to PME */}
-                  <Route path="/contact" element={<Contact />} />
-                  <Route path="/guide" element={<Guide />} />
-                  <Route path="/admin-login" element={<AdminLogin />} />
-            
-            {/* Protected Routes */}
-            <Route path="/dashboard" element={
-              <ProtectedRoute>
-                <AppLayout>
-                  <AdaptiveDashboard />
-                </AppLayout>
-              </ProtectedRoute>
-            } />
-            <Route path="/ventes" element={
-              <ProtectedRoute>
-                <AppLayout>
-                  <Ventes />
-                </AppLayout>
-              </ProtectedRoute>
-            } />
-            <Route path="/stock" element={
-              <ProtectedRoute>
-                <AppLayout>
-                  <Stock />
-                </AppLayout>
-              </ProtectedRoute>
-            } />
-            <Route path="/personnel" element={
-              <ProtectedRoute>
-                <AppLayout>
-                  <Personnel />
-                </AppLayout>
-              </ProtectedRoute>
-            } />
-            <Route path="/rapports" element={
-              <ProtectedRoute>
-                <AppLayout>
-                  <Rapports />
-                </AppLayout>
-              </ProtectedRoute>
-            } />
-            <Route path="/produits" element={
-              <ProtectedRoute>
-                <AppLayout>
-                  <div className="p-6"><h1 className="text-3xl font-bold">Produits & Services - En développement</h1></div>
-                </AppLayout>
-              </ProtectedRoute>
-            } />
-            <Route path="/clients" element={
-              <ProtectedRoute>
-                <AppLayout>
-                  <div className="p-6"><h1 className="text-3xl font-bold">Gestion Clients - En développement</h1></div>
-                </AppLayout>
-              </ProtectedRoute>
-            } />
-                  <Route path="/parametres" element={
-                    <ProtectedRoute>
-                      <AppLayout>
-                        <Parametres />
-                      </AppLayout>
-                    </ProtectedRoute>
-                  } />
-                  <Route path="/admin" element={<AdminPanel />} />
-            
-                  {/* No redirect needed - root already handled above */}
-                  
-                  {/* Catch all - 404 */}
-                  <Route path="*" element={<NotFound />} />
-          </Routes>
-              </BrowserRouter>
-            </TooltipProvider>
-          </ActivityProvider>
-        </AuthProvider>
+          <AuthProvider>
+            <ActivityProvider>
+              <TooltipProvider>
+                <Toaster />
+                <Sonner />
+                <PWAInstaller />
+                <BrowserRouter
+                  future={{
+                    v7_startTransition: true,
+                    v7_relativeSplatPath: true
+                  }}
+                >
+                  <Routes>
+                    {/* Public Routes */}
+                    <Route path="/" element={<Home />} />
+                    <Route path="/login" element={<Login />} />
+                    <Route path="/register" element={<Register />} />
+                    <Route path="/contact" element={<Contact />} />
+                    <Route path="/guide" element={<Guide />} />
+                    <Route path="/admin-login" element={<AdminLogin />} />
+
+                    {/* Protected Routes */}
+                    <Route path="/dashboard" element={
+                      <ProtectedRoute>
+                        <AppLayout>
+                          <AdaptiveDashboard />
+                        </AppLayout>
+                      </ProtectedRoute>
+                    } />
+                    <Route path="/ventes" element={
+                      <ProtectedRoute>
+                        <AppLayout>
+                          <Ventes />
+                        </AppLayout>
+                      </ProtectedRoute>
+                    } />
+                    <Route path="/stock" element={
+                      <ProtectedRoute>
+                        <AppLayout>
+                          <Stock />
+                        </AppLayout>
+                      </ProtectedRoute>
+                    } />
+                    <Route path="/personnel" element={
+                      <ProtectedRoute>
+                        <AppLayout>
+                          <Personnel />
+                        </AppLayout>
+                      </ProtectedRoute>
+                    } />
+                    <Route path="/rapports" element={
+                      <ProtectedRoute>
+                        <AppLayout>
+                          <Rapports />
+                        </AppLayout>
+                      </ProtectedRoute>
+                    } />
+                    <Route path="/produits" element={
+                      <ProtectedRoute>
+                        <AppLayout>
+                          <div className="p-6"><h1 className="text-3xl font-bold">Produits & Services - En développement</h1></div>
+                        </AppLayout>
+                      </ProtectedRoute>
+                    } />
+                    <Route path="/clients" element={
+                      <ProtectedRoute>
+                        <AppLayout>
+                          <div className="p-6"><h1 className="text-3xl font-bold">Gestion Clients - En développement</h1></div>
+                        </AppLayout>
+                      </ProtectedRoute>
+                    } />
+                    <Route path="/parametres" element={
+                      <ProtectedRoute>
+                        <AppLayout>
+                          <Parametres />
+                        </AppLayout>
+                      </ProtectedRoute>
+                    } />
+                    <Route path="/admin" element={<AdminPanel />} />
+
+                    {/* Catch all - 404 */}
+                    <Route path="*" element={<NotFound />} />
+                  </Routes>
+                </BrowserRouter>
+              </TooltipProvider>
+            </ActivityProvider>
+          </AuthProvider>
       </QueryClientProvider>
     </DataProtection>
   </ErrorBoundary>
@@ -151,7 +141,7 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => (
             <h2 className="font-semibold text-foreground">Ebo'o Gest - Gestion PME</h2>
           </div>
         </header>
-        
+
         {/* Main Content */}
         <main className="flex-1 overflow-auto">
           {children}
