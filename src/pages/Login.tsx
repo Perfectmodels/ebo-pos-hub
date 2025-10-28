@@ -26,13 +26,15 @@ export default function Login() {
   const { toast } = useToast();
   const navigate = useNavigate();
 
-  const handleSignIn = async () => {
+  const handleSignIn = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    
     try {
       const validatedData = signInSchema.parse({ email, password });
       setLoading(true);
       const { error } = await signIn(validatedData.email, validatedData.password);
       if (error) throw new Error("Email ou mot de passe incorrect.");
-      toast({ title: "Connexion réussie" });
+      toast({ title: "Connexion réussie", description: "Bienvenue sur Ebo'o Gest !" });
       navigate('/dashboard');
     } catch (error: any) {
       const message = (error instanceof z.ZodError) ? error.issues[0].message : error.message;
@@ -62,12 +64,12 @@ export default function Login() {
               <h2 className="text-2xl font-bold">Connexion</h2>
               <p className="text-muted-foreground">Accédez à votre tableau de bord</p>
             </div>
-            <div className="space-y-4">
+            <form onSubmit={handleSignIn} className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="signin-email">Email</Label>
                 <div className="relative">
                   <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input id="signin-email" type="email" placeholder="votre@email.com" value={email} onChange={(e) => setEmail(e.target.value)} disabled={loading} className="pl-10" />
+                  <Input id="signin-email" type="email" placeholder="votre@email.com" value={email} onChange={(e) => setEmail(e.target.value)} disabled={loading} className="pl-10" required />
                 </div>
               </div>
               <div className="space-y-2">
@@ -77,13 +79,13 @@ export default function Login() {
                 </div>
                 <div className="relative">
                   <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input id="signin-password" type={showPassword ? "text" : "password"} placeholder="••••••••" value={password} onChange={(e) => setPassword(e.target.value)} disabled={loading} className="pl-10"/>
+                  <Input id="signin-password" type={showPassword ? "text" : "password"} placeholder="••••••••" value={password} onChange={(e) => setPassword(e.target.value)} disabled={loading} className="pl-10" required />
                   <Button type="button" variant="ghost" size="icon" className="absolute right-0 top-0 h-full px-3" onClick={() => setShowPassword(!showPassword)}>
                     {showPassword ? <EyeOff className="h-4 w-4"/> : <Eye className="h-4 w-4"/>}
                   </Button>
                 </div>
               </div>
-              <Button onClick={handleSignIn} className="w-full btn-gradient" disabled={loading}>
+              <Button type="submit" className="w-full btn-gradient" disabled={loading}>
                 {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 {loading ? "Connexion..." : "Se connecter"}
               </Button>
@@ -93,7 +95,7 @@ export default function Login() {
                     Inscrivez-vous ici
                 </Link>
               </p>
-            </div>
+            </form>
           </CardContent>
         </Card>
       </div>

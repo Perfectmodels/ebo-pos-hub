@@ -33,15 +33,24 @@ export default function Register() {
   const { toast } = useToast();
   const navigate = useNavigate();
 
-  const handleSignUp = async () => {
+  const handleSignUp = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    
     try {
       const validatedData = signUpSchema.parse({ email, password, businessName, businessType, currency });
       setLoading(true);
-      const { error } = await signUp(validatedData.email, validatedData.password, validatedData);
+      const { error } = await signUp(validatedData.email, validatedData.password, {
+        businessName: validatedData.businessName,
+        businessType: validatedData.businessType,
+        currency: validatedData.currency
+      });
       if (error) {
         throw new Error(error.code === 'auth/email-already-in-use' ? "Cet email est déjà utilisé." : "Erreur lors de l'inscription.");
       }
-      toast({ title: "Compte créé avec succès !", description: "Bienvenue sur votre nouveau tableau de bord." });
+      toast({ 
+        title: "Compte créé avec succès !", 
+        description: "Bienvenue sur Ebo'o Gest ! Votre tableau de bord est personnalisé pour votre activité." 
+      });
       navigate('/dashboard');
     } catch (error: any) {
       const message = (error instanceof z.ZodError) ? error.issues[0].message : error.message;
@@ -71,7 +80,7 @@ export default function Register() {
               <h2 className="text-2xl font-bold">Inscription PME</h2>
               <p className="text-muted-foreground">Créez votre compte pour commencer</p>
             </div>
-            <div className="space-y-4">
+            <form onSubmit={handleSignUp} className="space-y-4">
               <div className="space-y-2">
                   <Label htmlFor="businessName"><Building className="inline-block mr-2 h-4 w-4"/>Nom de l'entreprise</Label>
                   <Input id="businessName" placeholder="Ex: Le Bon Goût" value={businessName} onChange={(e) => setBusinessName(e.target.value)} disabled={loading} />
@@ -81,11 +90,17 @@ export default function Register() {
                   <Select onValueChange={setBusinessType} value={businessType} disabled={loading}>
                       <SelectTrigger><SelectValue placeholder="Sélectionnez un type" /></SelectTrigger>
                       <SelectContent>
-                          <SelectItem value="restaurant">Restaurant / Fast-Food</SelectItem>
-                          <SelectItem value="bar">Bar / Café</SelectItem>
-                          <SelectItem value="retail">Commerce / Boutique</SelectItem>
-                          <SelectItem value="services">Services</SelectItem>
-                          <SelectItem value="other">Autre</SelectItem>
+                          <SelectItem value="restaurant">Restaurant</SelectItem>
+                          <SelectItem value="snack">Snack / Fast-Food</SelectItem>
+                          <SelectItem value="bar">Bar</SelectItem>
+                          <SelectItem value="cafe">Café</SelectItem>
+                          <SelectItem value="commerce">Commerce / Supérette</SelectItem>
+                          <SelectItem value="boutique">Boutique</SelectItem>
+                          <SelectItem value="boulangerie">Boulangerie / Pâtisserie</SelectItem>
+                          <SelectItem value="pharmacie">Pharmacie</SelectItem>
+                          <SelectItem value="traiteur">Service traiteur</SelectItem>
+                          <SelectItem value="loisirs">Loisirs & Animation</SelectItem>
+                          <SelectItem value="autre">Autre</SelectItem>
                       </SelectContent>
                   </Select>
               </div>
@@ -113,17 +128,17 @@ export default function Register() {
                   </Button>
                 </div>
               </div>
-              <Button onClick={handleSignUp} className="w-full btn-gradient" disabled={loading}>
+              <Button type="submit" className="w-full btn-gradient" disabled={loading}>
                   {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                   {loading ? "Création du compte..." : "Créer mon compte et commencer"}
               </Button>
-               <p className="text-center text-sm text-muted-foreground">
+                <p className="text-center text-sm text-muted-foreground">
                   Déjà un compte ?{' '}
                   <Link to="/login" className="text-primary hover:underline">
                       Connectez-vous ici
                   </Link>
               </p>
-            </div>
+            </form>
           </CardContent>
         </Card>
       </div>
