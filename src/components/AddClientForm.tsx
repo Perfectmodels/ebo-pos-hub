@@ -34,12 +34,18 @@ export default function AddClientForm({ onClientAdded, onClose }: AddClientFormP
   const { toast } = useToast();
   const { addClient } = useClients();
 
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<{
+    full_name: string;
+    email: string;
+    phone: string;
+    address: string;
+    status: 'active' | 'inactive';
+  }>({
     full_name: '',
     email: '',
     phone: '',
     address: '',
-    status: 'active' as const
+    status: 'active'
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -56,9 +62,12 @@ export default function AddClientForm({ onClientAdded, onClose }: AddClientFormP
 
     setLoading(true);
     try {
-      const result = await addClient(formData);
+      const result = await addClient({
+        ...formData,
+        total_purchases: 0
+      });
       
-      if (result.success) {
+      if (result && !result.error) {
         toast({
           title: "Client ajouté",
           description: "Le client a été ajouté avec succès",
@@ -79,7 +88,7 @@ export default function AddClientForm({ onClientAdded, onClose }: AddClientFormP
       } else {
         toast({
           title: "Erreur",
-          description: result.error || "Impossible d'ajouter le client",
+          description: result?.error || "Impossible d'ajouter le client",
           variant: "destructive"
         });
       }

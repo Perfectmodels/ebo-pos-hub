@@ -15,7 +15,7 @@ class OfflineManager {
   private dbName = 'ebo-gest-offline';
   private version = 1;
   private db: IDBDatabase | null = null;
-  private isOnline = navigator.onLine;
+  private onlineStatus = navigator.onLine;
   private syncQueue: any[] = [];
 
   constructor() {
@@ -79,13 +79,13 @@ class OfflineManager {
   // Écouter les changements de connectivité
   private setupNetworkListeners(): void {
     window.addEventListener('online', () => {
-      this.isOnline = true;
+      this.onlineStatus = true;
       console.log('🌐 Connexion rétablie - Synchronisation en cours...');
       this.syncOfflineData();
     });
 
     window.addEventListener('offline', () => {
-      this.isOnline = false;
+      this.onlineStatus = false;
       console.log('📴 Mode hors ligne activé');
     });
   }
@@ -364,7 +364,7 @@ class OfflineManager {
 
   // Vérifier si on est en ligne
   isOnline(): boolean {
-    return this.isOnline;
+    return this.onlineStatus;
   }
 
   // Obtenir le statut de synchronisation
@@ -377,7 +377,7 @@ class OfflineManager {
     const syncQueue = await this.getSyncQueue();
     
     return {
-      isOnline: this.isOnline,
+      isOnline: this.onlineStatus,
       lastSync: lastSyncStr ? new Date(lastSyncStr) : null,
       pendingOperations: syncQueue.length
     };

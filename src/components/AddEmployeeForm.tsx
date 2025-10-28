@@ -15,6 +15,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { useEmployees } from "@/hooks/useEmployees";
 import { useActivity } from "@/contexts/ActivityContext";
+import { useAuth } from "@/contexts/AuthContext";
 import { getActivityRoles, getDefaultRole } from "@/utils/employeeProfiles";
 import { 
   Plus, 
@@ -38,6 +39,7 @@ export default function AddEmployeeForm({ onEmployeeAdded, onClose }: AddEmploye
   const { toast } = useToast();
   const { addEmployee } = useEmployees();
   const { currentActivity } = useActivity();
+  const { user } = useAuth();
 
   // Obtenir les rôles spécifiques à l'activité
   const activityRoles = getActivityRoles(currentActivity?.id || 'restaurant');
@@ -75,9 +77,21 @@ export default function AddEmployeeForm({ onEmployeeAdded, onClose }: AddEmploye
 
     setLoading(true);
     try {
-      const result = await addEmployee(formData);
+      if (!user) {
+        toast({
+          title: "Erreur",
+          description: "Utilisateur non connecté",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      const result = await addEmployee({
+        ...formData,
+        business_id: user.uid
+      });
       
-      if (result.success) {
+      if (result && !result.error) {
         toast({
           title: "Employé ajouté",
           description: `${formData.full_name} a été ajouté avec le rôle ${activityRoles.find(r => r.id === formData.role)?.name}`,
