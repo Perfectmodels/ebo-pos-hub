@@ -6,13 +6,14 @@ import { getAnalytics, isSupported } from 'firebase/analytics';
 
 // Configuration Firebase - EBO'O GEST
 const firebaseConfig = {
-  apiKey: "AIzaSyB1lqbUabKH4WgbLPGaZYMwwjCL7n5JodM",
-  authDomain: "perfect-models-hub.firebaseapp.com",
-  projectId: "perfect-models-hub",
-  storageBucket: "perfect-models-hub.appspot.com",
-  messagingSenderId: "1095556795396",
-  appId: "1:1095556795396:web:b33532729a6d61a86b1129",
-  measurementId: "G-03XW3FWG7L"
+  apiKey: "AIzaSyDnFdxaEHsesZKc2l1nq1jd_toxMIuBiEM",
+  authDomain: "hide-666e5.firebaseapp.com",
+  databaseURL: "https://hide-666e5-default-rtdb.firebaseio.com",
+  projectId: "hide-666e5",
+  storageBucket: "hide-666e5.firebasestorage.app",
+  messagingSenderId: "602771999567",
+  appId: "1:602771999567:web:e18197728638d93bf3533a",
+  measurementId: "G-VEN7S78GJ6"
 };
 
 // Initialiser Firebase
