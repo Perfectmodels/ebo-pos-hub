@@ -16,7 +16,10 @@ export interface Sale {
   employee_id: string;
   items: SaleItem[];
   total: number;
-  createdAt: Timestamp; // Firestore timestamp
+  createdAt: Timestamp;
+  product_id?: string;
+  total_amount?: number;
+  quantity?: number;
 }
 
 export interface SalesSession {

@@ -226,7 +226,7 @@ export default function CashRegisterSelector() {
             const status = getRegisterStatus(register.id);
             const StatusIcon = statusIcons[status];
             const isCurrentUser = register.currentUser === user?.uid;
-            const currentSessionForRegister = sessions.find(s => 
+            const currentSessionForRegister = currentSessions.find(s => 
               s.registerId === register.id && s.status === 'active'
             );
 

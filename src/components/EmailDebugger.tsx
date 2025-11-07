@@ -100,7 +100,11 @@ export default function EmailDebugger() {
         ? 'https://eboo-gest.vercel.app/confirm-signup'
         : 'http://localhost:8080/confirm-signup');
       
-      const { error } = await signUp(testEmail, testPassword);
+      const { error } = await signUp(testEmail, testPassword, {
+        businessName: 'Test Business',
+        businessType: 'restaurant',
+        currency: 'XAF'
+      });
       
       if (error) {
         console.error('❌ Erreur inscription:', error);

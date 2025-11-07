@@ -211,14 +211,15 @@ export default function QuickAddProduct({ onProductAdded, onClose }: QuickAddPro
         name: formData.name,
         qr_code: formData.code,
         barcode: formData.code,
-        category_id: formData.category,
+        category: formData.category,
         selling_price: formData.selling_price,
         purchase_price: formData.buying_price,
         current_stock: formData.current_stock,
         min_stock: formData.min_stock,
         unit: formData.unit || 'pièce',
-        supplier_id: null,
-        expiry_date: null
+        price: formData.selling_price || 0,
+        stock: formData.current_stock || 0,
+        business_id: user?.uid || ''
       });
 
       if (error) {

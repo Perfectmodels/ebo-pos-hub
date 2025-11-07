@@ -32,6 +32,7 @@ export interface ActivityContextType {
   isFeatureEnabled: (feature: string) => boolean;
   getSidebarItems: () => SidebarItem[];
   getDashboardWidgets: () => string[];
+  loading?: boolean;
 }
 
 const ActivityContext = createContext<ActivityContextType | undefined>(undefined);

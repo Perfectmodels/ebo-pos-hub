@@ -161,6 +161,10 @@ export const PermissionGate = ({
 };
 
 // Hook pour les permissions d'employé spécifiques
+const getPermissionsForRole = (role: string): string[] => {
+  return rolePermissions[role] || [];
+};
+
 export const useEmployeePermissions = (employeeRole?: string) => {
   const { isOwner } = usePermissions();
 

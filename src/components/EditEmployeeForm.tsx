@@ -59,8 +59,9 @@ const EditEmployeeForm: React.FC<EditEmployeeFormProps> = ({ employee, updateEmp
     if (!result.success) {
       const fieldErrors: Record<string, string> = {};
       result.error.issues.forEach(issue => {
-        if (issue.path[0]) {
-          fieldErrors[issue.path[0]] = issue.message;
+        const path = issue.path[0];
+        if (path && typeof path === 'string') {
+          fieldErrors[path] = issue.message;
         }
       });
       setErrors(fieldErrors);

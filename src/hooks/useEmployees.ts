@@ -12,6 +12,7 @@ export interface Employee {
   phone?: string;
   pin_code?: string; 
   business_id: string;
+  created_at?: string;
 }
 
 export const useEmployees = () => {

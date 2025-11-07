@@ -77,7 +77,12 @@ export default function ProductManager() {
     }
 
     try {
-      const result = await addProduct(formData);
+      const result = await addProduct({
+        ...formData,
+        price: formData.selling_price || 0,
+        stock: formData.current_stock || 0,
+        business_id: user?.uid || ''
+      });
       
       if (result.success) {
         toast({

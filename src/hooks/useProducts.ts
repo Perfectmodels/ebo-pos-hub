@@ -13,6 +13,12 @@ export interface Product {
   min_stock: number;
   category: string;
   business_id: string;
+  description?: string;
+  selling_price?: number;
+  purchase_price?: number;
+  unit?: string;
+  qr_code?: string;
+  barcode?: string;
 }
 
 export const useProducts = () => {
@@ -48,20 +54,35 @@ export const useProducts = () => {
   }, [fetchProducts]);
 
   const addProduct = async (productData: Omit<Product, 'id'>) => {
-    await addDoc(collection(firestore, 'products'), productData);
-    fetchProducts();
+    try {
+      const docRef = await addDoc(collection(firestore, 'products'), productData);
+      await fetchProducts();
+      return { success: true, data: { id: docRef.id, ...productData }, error: null };
+    } catch (err) {
+      return { success: false, data: null, error: err instanceof Error ? err.message : 'Erreur' };
+    }
   };
 
   const updateProduct = async (id: string, updates: Partial<Product>) => {
-    const productRef = doc(firestore, 'products', id);
-    await updateDoc(productRef, updates);
-    fetchProducts();
+    try {
+      const productRef = doc(firestore, 'products', id);
+      await updateDoc(productRef, updates);
+      await fetchProducts();
+      return { success: true, error: null };
+    } catch (err) {
+      return { success: false, error: err instanceof Error ? err.message : 'Erreur' };
+    }
   };
 
   const deleteProduct = async (id: string) => {
-    const productRef = doc(firestore, 'products', id);
-    await deleteDoc(productRef);
-    fetchProducts();
+    try {
+      const productRef = doc(firestore, 'products', id);
+      await deleteDoc(productRef);
+      await fetchProducts();
+      return { success: true, error: null };
+    } catch (err) {
+      return { success: false, error: err instanceof Error ? err.message : 'Erreur' };
+    }
   };
 
   const updateProductStock = async (items: { productId: string; quantity: number }[]) => {
