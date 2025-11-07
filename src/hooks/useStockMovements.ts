@@ -7,12 +7,14 @@ import { useAuth } from '@/contexts/AuthContext';
 export interface StockMovement {
   id: string;
   product_id: string;
+  product_name?: string;
   business_id: string;
   quantity: number;
   type: 'in' | 'out';
   reason?: string;
   user_id: string;
   createdAt: Timestamp;
+  created_at?: any;
 }
 
 export const useStockMovements = () => {

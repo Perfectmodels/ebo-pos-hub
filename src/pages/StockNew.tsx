@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { useProducts } from "@/hooks/useProducts";
-import { useStockMovements } from "@/hooks/useStockMovements";
+import { useStockMovements, StockMovement } from "@/hooks/useStockMovements";
 import { useToast } from "@/hooks/use-toast";
 import { useActivity } from "@/contexts/ActivityContext";
 import { useAuth } from "@/contexts/AuthContext";
@@ -111,8 +111,8 @@ export default function StockNew() {
     
     movementsChart.push({
       date: date.toLocaleDateString('fr-FR', { weekday: 'short' }),
-      entries: dayMovements.filter(m => m.type === 'entry').length,
-      exits: dayMovements.filter(m => m.type === 'exit').length
+      entries: dayMovements.filter(m => m.type === 'in').length,
+      exits: dayMovements.filter(m => m.type === 'out').length
     });
   }
 
@@ -253,8 +253,8 @@ export default function StockNew() {
                         </p>
                       </div>
                       <div className="text-right">
-                        <Badge variant={movement.type === 'entry' ? 'default' : 'destructive'}>
-                          {movement.type === 'entry' ? '+' : '-'}{movement.quantity}
+                        <Badge variant={movement.type === 'in' ? 'default' : 'destructive'}>
+                          {movement.type === 'in' ? '+' : '-'}{movement.quantity}
                         </Badge>
                         <p className="text-xs text-muted-foreground mt-1">
                           {movement.reason || 'Mouvement manuel'}

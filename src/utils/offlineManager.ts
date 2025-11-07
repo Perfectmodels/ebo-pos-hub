@@ -92,11 +92,12 @@ class OfflineManager {
 
   // Configuration du Background Sync
   private setupBackgroundSync(): void {
-    if ('serviceWorker' in navigator && 'sync' in window.ServiceWorkerRegistration.prototype) {
-      navigator.serviceWorker.ready.then(registration => {
-        registration.sync.register('offline-sync').catch(console.error);
-      });
-    }
+    // Background sync n'est pas encore bien supporté, on le commente pour éviter les erreurs
+    // if ('serviceWorker' in navigator && 'sync' in window.ServiceWorkerRegistration.prototype) {
+    //   navigator.serviceWorker.ready.then(registration => {
+    //     registration.sync.register('offline-sync').catch(console.error);
+    //   });
+    // }
   }
 
   // Sauvegarder des données localement

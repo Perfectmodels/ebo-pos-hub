@@ -201,7 +201,6 @@ export default function Produits() {
         {/* Modals */}
         {showAddProduct && (
           <QuickAddProduct
-            product={selectedProduct}
             onProductAdded={() => {
               setShowAddProduct(false);
               setSelectedProduct(null);

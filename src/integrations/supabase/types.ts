@@ -14,7 +14,45 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      businesses: {
+        Row: {
+          business_name: string
+          business_type: string
+          created_at: string
+          currency: string
+          email: string
+          id: string
+          is_google_user: boolean | null
+          owner_id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          business_name: string
+          business_type: string
+          created_at?: string
+          currency?: string
+          email: string
+          id?: string
+          is_google_user?: boolean | null
+          owner_id: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          business_name?: string
+          business_type?: string
+          created_at?: string
+          currency?: string
+          email?: string
+          id?: string
+          is_google_user?: boolean | null
+          owner_id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

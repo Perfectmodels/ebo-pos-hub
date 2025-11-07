@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { useProducts } from "@/hooks/useProducts";
 import { useActivity } from "@/contexts/ActivityContext";
+import { useAuth } from "@/contexts/AuthContext";
 import { getCategoriesForActivity } from "@/utils/productCategories";
 import { 
   Plus, 
@@ -34,6 +35,7 @@ interface ProductFormData {
 export default function ProductManager() {
   const { products, loading, addProduct, updateProduct, deleteProduct } = useProducts();
   const { currentActivity } = useActivity();
+  const { user } = useAuth();
   const { toast } = useToast();
   
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);

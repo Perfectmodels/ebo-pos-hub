@@ -37,6 +37,7 @@ const statusColors = {
 export default function CashRegisterSelector() {
   const { 
     registers, 
+    sessions,
     currentSession, 
     availableRegisters, 
     createRegister, 
@@ -226,7 +227,7 @@ export default function CashRegisterSelector() {
             const status = getRegisterStatus(register.id);
             const StatusIcon = statusIcons[status];
             const isCurrentUser = register.currentUser === user?.uid;
-            const currentSessionForRegister = currentSessions.find(s => 
+            const currentSessionForRegister = sessions.find(s => 
               s.registerId === register.id && s.status === 'active'
             );
 

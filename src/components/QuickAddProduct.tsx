@@ -10,6 +10,7 @@ import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, Command
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useToast } from "@/hooks/use-toast";
 import { useProducts } from "@/hooks/useProducts";
+import { useAuth } from "@/contexts/AuthContext";
 import { 
   Package, 
   Plus, 
@@ -106,6 +107,7 @@ const generateProductSuggestions = () => {
 export default function QuickAddProduct({ onProductAdded, onClose }: QuickAddProductProps) {
   const { addProduct } = useProducts();
   const { toast } = useToast();
+  const { user } = useAuth();
   
   const [loading, setLoading] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(false);
